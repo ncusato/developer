@@ -18,7 +18,7 @@ Estimated Time: Reference metadata
 | Lab 3: Deploy x402 Middleware as an OCI Function | `deploy-x402-middleware/deploy-x402-middleware.md` |
 | Lab 4: Integrate x402 with API Gateway and the SH REST API | `integrate-api-gateway/integrate-api-gateway.md` |
 | Lab 5: Test With an Agent Client | `test-agent-client/test-agent-client.md` |
-| Lab 6: Add Idempotency and Payment Receipts | `idempotency-receipts/idempotency-receipts.md` |
+| Lab 6: Verify Idempotency and Payment Receipts | `idempotency-receipts/idempotency-receipts.md` |
 | Lab 7: Polish Responses With OCI Generative AI | `oci-genai-responses/oci-genai-responses.md` |
 | Lab 8: Troubleshooting and Next Steps | `troubleshooting-next-steps/troubleshooting-next-steps.md` |
 
@@ -37,6 +37,8 @@ Estimated Time: Reference metadata
 | Sample schema row counts | Resolved | Lab 2 removed exact row-count claims and tells learners to use `USER_TABLES` output as the source of truth. |
 | Network configuration | Resolved | Lab 1 now creates an explicit VCN, public API Gateway subnet, private Functions subnet, NAT gateway, and service gateway. |
 | OAuth client setup for `x402_app` | Improved | Lab 3 now adds receipts privilege guidance before OAuth client creation. A production LiveLabs pass can add screenshots. |
+| 60-minute core runtime | Implemented | Core labs now use Cloud Shell helper assets for provisioning, SQL setup, middleware generation, gateway routing, and client generation. The core path is 60 minutes, with GenAI optional. |
+| OCI Generative AI `GenerateText` deprecation | Remaining SME review | Lab 7 still uses the source draft's `generateText` flow. Oracle docs flag this API path for deprecation, so publishers should migrate the optional lab to the current Chat API before official publication. |
 | End-to-end smoke test | Remaining external validation | Run all labs, including optional GenAI, in a clean OCI tenancy before official publication. Local markdown validation cannot complete this step. |
 
 ## Verification Evidence
@@ -55,6 +57,7 @@ Estimated Time: Reference metadata
 3. Confirm the selected x402 facilitator endpoint supports `x402Version: 2`, Base Sepolia, the `exact` scheme, and the configured USDC asset.
 4. Confirm the Base Sepolia USDC EIP-712 `name()` and `version()` values before final publication.
 5. Add screenshots for the ORDS OAuth client and privilege screen if the official LiveLabs production pass requires screenshot-level guidance.
+6. Review Lab 7 against current OCI Generative AI API guidance and migrate from `generateText` if required.
 
 ## Acknowledgements
 

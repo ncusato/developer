@@ -6,9 +6,12 @@ Raw JSON rows work for traditional API consumers. AI agents often need a model c
 
 This lab adds optional summarization inside the x402 middleware function. After ORDS returns rows, the function calls OCI Generative AI. It returns the raw data and summary in the same paid response.
 
+> **Publish review note:** Oracle Generative AI APIs and model interfaces change over time. Before official publication, confirm whether this optional lab should use the current Chat API instead of the source draft's `generateText` pattern.
+
 ## Architecture Change
 
 ```
+<copy>
 [Client] -> [API Gateway] -> [x402 Middleware Function]
                                   |
                                   | verified + settled
@@ -21,6 +24,7 @@ This lab adds optional summarization inside the x402 middleware function. After 
                                   |
                                   v
                           [Combined response]
+</copy>
 ```
 
 ### Objectives
@@ -46,20 +50,25 @@ Estimated Time: 20 minutes
 2. Create `x402-functions-dg` with matching rule:
 
     ```
+    <copy>
        ALL {resource.type = 'fnfunc', resource.compartment.id = 'YOUR_COMPARTMENT_OCID'}
+    </copy>
     ```
 
 3. Navigate to **Policies** and create `x402-functions-genai-policy`:
 
     ```
+    <copy>
        allow dynamic-group x402-functions-dg to use generative-ai-family in compartment YOUR_COMPARTMENT
+    </copy>
     ```
 
 ## Task 3: Add Gen AI Dependencies to the Middleware
 
 1. In the `x402-middleware` project from Lab 3, update `package.json`:
 
-    ```json
+    ```
+    <copy>
     {
       "name": "x402-middleware",
       "version": "1.0.0",
@@ -73,11 +82,13 @@ Estimated Time: 20 minutes
         "viem": "^2.21.0"
       }
     }
+    </copy>
     ```
 
 2. At the top of `func.js`, add the OCI SDK imports and configuration:
 
-    ```javascript
+    ```
+    <copy>
     const common = require('oci-common');
     const genai = require('oci-generativeaiinference');
 
@@ -89,13 +100,15 @@ Estimated Time: 20 minutes
     const genAiClient = new genai.GenerativeAiInferenceClient({
       authenticationDetailsProvider: provider
     });
+    </copy>
     ```
 
 ## Task 4: Add a Summarization Helper
 
 1. Add this helper below `buildOrdsUrl()` in `func.js`:
 
-    ```javascript
+    ```
+    <copy>
     function buildPrompt(ordsData, resourcePath) {
       const items = ordsData.items || [];
       const sample = items.slice(0, 20);
@@ -144,13 +157,15 @@ Estimated Time: 20 minutes
         summaryGeneratedAt: new Date().toISOString()
       };
     }
+    </copy>
     ```
 
 ## Task 5: Enrich Paid Responses
 
 1. In the Lab 3 handler, replace the final `return ordsResp.data;` block with this version:
 
-    ```javascript
+    ```
+    <copy>
     let responseBody = ordsResp.data;
 
     if (SUMMARIZE_ENABLED && ordsResp.status >= 200 && ordsResp.status < 300) {
@@ -165,22 +180,26 @@ Estimated Time: 20 minutes
     setResponseHeader(ctx, 'PAYMENT-RESPONSE', paymentResponseHeader);
     setResponseHeader(ctx, 'Content-Type', 'application/json');
     return responseBody;
+    </copy>
     ```
 
 2. Configure and redeploy the middleware:
 
-    ```bash
+    ```
+    <copy>
     fn config function x402-functions x402-middleware COMPARTMENT_ID "YOUR_COMPARTMENT_OCID"
     fn config function x402-functions x402-middleware MODEL_ID "cohere.command-latest"
     fn config function x402-functions x402-middleware SUMMARIZE_ENABLED "true"
     fn -v deploy --app x402-functions
+    </copy>
     ```
 
 ## Task 6: Bump the Price for Summarized Responses (Optional)
 
 1. Update `priceFor()` if you want summarized responses to cost more than raw rows:
 
-    ```javascript
+    ```
+    <copy>
     function priceFor(path) {
       const summarizeEnabled = process.env.SUMMARIZE_ENABLED === 'true';
       const base = path.includes('/customers') ? 20000
@@ -188,6 +207,7 @@ Estimated Time: 20 minutes
                  : 5000;
       return summarizeEnabled ? String(base * 5) : String(base);
     }
+    </copy>
     ```
 
     A raw sales query stays at $0.01. A summarized one becomes $0.05.
@@ -196,7 +216,8 @@ Estimated Time: 20 minutes
 
 1. Re-run the client from Lab 5. The response now includes a natural-language summary:
 
-    ```json
+    ```
+    <copy>
     {
       "items": [
         { "prod_id": 13, "cust_id": 987, "amount_sold": 1782.32 }
@@ -205,6 +226,7 @@ Estimated Time: 20 minutes
       "summaryModel": "cohere.command-latest",
       "summaryGeneratedAt": "2026-05-16T18:42:11.812Z"
     }
+    </copy>
     ```
 
 ## Task 8: Review Cost Considerations
@@ -222,6 +244,17 @@ Before publishing or moving to mainnet, check the current pricing page. Calculat
 Agents spend tokens whether you summarize for them or not. Somewhere upstream, a model will inspect this data. By running inference at your edge, on your data, you capture that value.
 
 It also showcases the OCI stack in a single request. API Gateway exposes the paid endpoint. Functions verifies payment and orchestrates the call. Autonomous Database serves data through ORDS. Generative AI adds the insight layer.
+
+## Learn more
+
+- [OCI Generative AI documentation](https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm)
+- [Offered pretrained foundational models in OCI Generative AI](https://docs.oracle.com/en-us/iaas/Content/generative-ai/generate-models.htm)
+- [Use model aliases in OCI Generative AI](https://docs.oracle.com/en-us/iaas/releasenotes/generative-ai/model-alias.htm)
+- [Calculating cost in Generative AI](https://docs.oracle.com/en-us/iaas/Content/generative-ai/calculate-cost.htm)
+- [Paying for on-demand inferencing](https://docs.oracle.com/en-us/iaas/Content/generative-ai/pay-on-demand.htm)
+- [OCI TypeScript SDK: Generative AI Inference module](https://docs.oracle.com/en-us/iaas/tools/typescript/latest/modules/_generativeaiinference_index_.html)
+- [Managing dynamic groups](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/managingdynamicgroups.htm)
+- [Writing policies for dynamic groups](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm)
 
 ## Acknowledgements
 

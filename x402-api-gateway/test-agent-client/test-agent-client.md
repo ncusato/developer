@@ -2,150 +2,99 @@
 
 ## Introduction
 
-You will build a Node.js client that simulates an AI agent: it makes a request, receives a 402, signs a payment payload with a testnet wallet, and retries. This is the canonical x402 client flow.
+You will run a provided Node.js client that behaves like an AI agent. It calls the paid API, receives a 402 challenge, signs a payment authorization with a Base Sepolia wallet, retries the request, and prints the paid SH sales data.
 
 ### Objectives
 
-- Create a Node.js client that can handle an x402 payment challenge.
-- Fund a Base Sepolia testnet wallet.
-- Sign an EIP-712 payment authorization.
-- Retry the paid request and inspect the returned SH sales data.
+- Prepare a testnet wallet for the x402 payment.
+- Generate the Node.js agent client from workshop assets.
+- Pay for one SH sales query through API Gateway.
+- Inspect the payment response and returned data.
 
-Estimated Time: 15 minutes
+Estimated Time: 10 minutes
 
-## Task 1: Set Up the Client Project
+## Task 1: Prepare a Testnet Wallet
 
+1. Use a dedicated testnet wallet. Do not use a wallet that holds real funds.
+2. Add ETH on Base Sepolia from a Base faucet.
+3. Add test USDC on Base Sepolia from the Circle faucet.
+4. Confirm the wallet has:
 
-1. Follow the instructions below to complete this task.
+    - A small ETH balance for gas.
+    - At least 1 test USDC.
 
-        ```bash
-        mkdir x402-client && cd x402-client
-        npm init -y
-        npm install axios viem
-        ```
+5. Keep the private key available in Cloud Shell only for this testnet lab.
 
-## Task 2: Fund a Testnet Wallet
+## Task 2: Generate the Client Project
 
-1. Generate a new test wallet or use an existing testnet wallet. Save the private key safely (testnet only - never use real funds).
-2. Get test ETH from a Base Sepolia faucet (e.g., [coinbase.com/faucets/base-sepolia-faucet](https://www.coinbase.com/faucets/base-sepolia-faucet)).
-3. Get test USDC on Base Sepolia from [faucet.circle.com](https://faucet.circle.com).
-4. Confirm your wallet has at least 1 USDC and some ETH for gas.
+1. In Cloud Shell, return to the workshop directory:
 
-## Task 3: Write the Client
+    ```
+    <copy>
+    cd ~/x402-workshop
+    source workshop.env
+    source workshop-outputs.env
+    </copy>
+    ```
 
+2. Download and run the client helper:
 
-1. Follow the instructions below to complete this task.
+    ```
+    <copy>
+    curl -fsSLO "$WORKSHOP_FILES_BASE/test-agent-client/files/create-agent-client.sh"
+    chmod +x create-agent-client.sh
+    ./create-agent-client.sh
+    </copy>
+    ```
 
-    Create `client.js`:
+3. The helper creates `x402-client`, downloads `client.js` and `package.json`, installs dependencies, and creates `run-client.sh`.
 
-        ```javascript
-        const axios = require('axios');
-        const crypto = require('crypto');
-        const { createWalletClient, http } = require('viem');
-        const { privateKeyToAccount } = require('viem/accounts');
-        const { baseSepolia } = require('viem/chains');
+## Task 3: Run the Paid Query
 
-        const GATEWAY_URL = process.env.GATEWAY_URL;
-        const PRIVATE_KEY = process.env.PRIVATE_KEY;
+1. Run the client with your testnet private key:
 
-        const account = privateKeyToAccount(PRIVATE_KEY);
-        const walletClient = createWalletClient({
-          account, chain: baseSepolia, transport: http()
-        });
+    ```
+    <copy>
+    cd ~/x402-workshop/x402-client
+    PRIVATE_KEY="0xYOUR_TESTNET_PRIVATE_KEY" ./run-client.sh
+    </copy>
+    ```
 
-        async function callPaidEndpoint() {
-          const filter = encodeURIComponent(JSON.stringify({ amount_sold: { $gt: 1000 } }));
-          const targetUrl = `${GATEWAY_URL}/sh/sales/?q=${filter}&limit=10`;
+2. Confirm the output shows:
 
-          // Step 1: GET -> 402
-          let initial = await axios.get(targetUrl, { validateStatus: () => true });
-          if (initial.status !== 402) {
-            console.log('Unexpected status:', initial.status);
-            return;
-          }
+    - The server payment requirement.
+    - `Paid status: 200`.
+    - The number of returned SH sales rows.
+    - A settlement response or transaction value from the facilitator.
 
-          // Step 2: Parse PAYMENT-REQUIRED
-          const requirementsB64 = initial.headers['payment-required'];
-          const requirements = JSON.parse(Buffer.from(requirementsB64, 'base64').toString());
-          const selected = requirements.accepts[0];
-          console.log(`Server requires ${selected.maxAmountRequired} of ${selected.asset} on ${selected.network}`);
+The client saved the payment signature in `.last-payment-signature`. You will use that file in Lab 6 to test idempotent replay.
 
-          // Step 3: Sign EIP-712 transferWithAuthorization
-          const nonce = '0x' + crypto.randomBytes(32).toString('hex');
-          const validAfter = 0;
-          const validBefore = Math.floor(Date.now() / 1000) + 60;
+## Task 4: Review the Agent Flow
 
-          const domain = {
-            name: selected.extra?.name || 'USDC',
-            version: selected.extra?.version || '2',
-            chainId: Number(selected.network.replace('eip155:', '')),
-            verifyingContract: selected.asset
-          };
+1. Open the client:
 
-          const types = {
-            TransferWithAuthorization: [
-              { name: 'from', type: 'address' },
-              { name: 'to', type: 'address' },
-              { name: 'value', type: 'uint256' },
-              { name: 'validAfter', type: 'uint256' },
-              { name: 'validBefore', type: 'uint256' },
-              { name: 'nonce', type: 'bytes32' }
-            ]
-          };
+    ```
+    <copy>
+    sed -n '1,180p' client.js
+    </copy>
+    ```
 
-          const message = {
-            from: account.address,
-            to: selected.payTo,
-            value: selected.maxAmountRequired,
-            validAfter,
-            validBefore,
-            nonce
-          };
+2. Notice the four agent actions:
 
-          const signature = await walletClient.signTypedData({
-            domain, types, primaryType: 'TransferWithAuthorization', message
-          });
+    - Call the API without payment.
+    - Decode the `PAYMENT-REQUIRED` header.
+    - Sign an EIP-712 transfer authorization.
+    - Retry with `PAYMENT-SIGNATURE`.
 
-          const payload = {
-            x402Version: 2,
-            scheme: 'exact',
-            network: selected.network,
-            payload: { signature, authorization: message }
-          };
-          const paymentSignatureHeader = Buffer.from(JSON.stringify(payload)).toString('base64');
+## Learn more
 
-          // Step 4: Retry with payment
-          const paid = await axios.get(targetUrl, {
-            headers: { 'PAYMENT-SIGNATURE': paymentSignatureHeader },
-            validateStatus: () => true
-          });
-
-          console.log('Status:', paid.status);
-          console.log(`Got ${paid.data.items?.length || 0} rows`);
-          if (paid.data.items?.[0]) {
-            console.log(`First sale: $${paid.data.items[0].amount_sold} on time_id ${paid.data.items[0].time_id}`);
-          }
-          if (paid.headers['payment-response']) {
-            const settlement = JSON.parse(Buffer.from(paid.headers['payment-response'], 'base64').toString());
-            console.log('Settlement tx:', settlement.transaction);
-          }
-        }
-
-        callPaidEndpoint().catch(console.error);
-        ```
-
-## Task 4: Run the Client
-
-
-1. Follow the instructions below to complete this task.
-
-        ```bash
-        export GATEWAY_URL="https://YOUR-GATEWAY-URL/v1"
-        export PRIVATE_KEY="0xYOUR_TESTNET_PRIVATE_KEY"
-        node client.js
-        ```
-
-    You should see the initial 402, then a successful response with real SH sales data and an on-chain transaction hash. An AI agent just paid $0.01 in USDC to query an Oracle database.
+- [x402 quickstart for buyers](https://docs.x402.org/getting-started/quickstart-for-buyers)
+- [x402 HTTP 402 documentation](https://docs.x402.org/core-concepts/http-402)
+- [x402 networks and token support](https://docs.x402.org/core-concepts/network-and-token-support)
+- [Viem signTypedData documentation](https://viem.sh/docs/actions/wallet/signTypedData)
+- [Base network faucets](https://docs.base.org/base-chain/network-information/network-faucets)
+- [Circle testnet faucet](https://faucet.circle.com/)
+- [Coinbase Developer Platform faucet API](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/faucets/request-funds-on-evm-test-networks)
 
 ## Acknowledgements
 

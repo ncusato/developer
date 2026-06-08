@@ -4,17 +4,17 @@ Estimated Time: Reference metadata
 
 ## Short Description
 
-Build an x402 payment gateway on Oracle Cloud Infrastructure that monetizes ORDS AutoREST endpoints over the SH sample schema in Autonomous Database.
+Build an x402 payment gateway on Oracle Cloud Infrastructure that monetizes ORDS AutoREST endpoints over the SH sample schema in Autonomous Database in a 60-minute Cloud Shell path.
 
 ## Long Description
 
-This workshop shows how to turn database-backed REST endpoints into paid, per-request data products. Learners provision Autonomous Database, expose SH sample-schema data through ORDS AutoREST, deploy an OCI Function that handles x402 payment challenges, connect it to OCI API Gateway, and test the paid flow with a Node.js client. They also add receipt storage for idempotency and can optionally enrich paid responses with OCI Generative AI summaries.
+This workshop shows how to turn database-backed REST endpoints into paid, per-request data products. Learners use Cloud Shell helpers to provision Autonomous Database, expose SH sample-schema data through ORDS AutoREST, deploy an OCI Function that handles x402 payment challenges, connect it to OCI API Gateway, and test the paid flow with a Node.js agent client. They verify receipt storage for idempotency and can optionally enrich paid responses with OCI Generative AI summaries.
 
 ## Duration
 
-- Core workshop: 90 minutes
+- Core workshop: 60 minutes
 - Optional OCI Generative AI lab: 20 minutes
-- Full path: 110 minutes
+- Full path: 80 minutes
 
 ## Audience
 
@@ -26,19 +26,19 @@ This workshop shows how to turn database-backed REST endpoints into paid, per-re
 
 - Oracle Cloud Account, Free Tier eligible
 - Basic familiarity with REST APIs, HTTP status codes, and SQL
-- Node.js 18 or later installed locally
-- OCI CLI and Fn CLI access for function deployment
+- Oracle Cloud Shell access
+- Base Sepolia test wallet with test ETH and test USDC
 
 ## Workshop Outline
 
 1. Lab 1: Provision OCI Infrastructure - 10 minutes
-2. Lab 2: Enable ORDS AutoREST on the SH Schema - 15 minutes
-3. Lab 3: Deploy x402 Middleware as an OCI Function - 20 minutes
-4. Lab 4: Integrate x402 with API Gateway and the SH REST API - 15 minutes
-5. Lab 5: Test With an Agent Client - 15 minutes
-6. Lab 6: Add Idempotency and Payment Receipts - 15 minutes
+2. Lab 2: Enable ORDS AutoREST on the SH Schema - 8 minutes
+3. Lab 3: Deploy x402 Middleware as an OCI Function - 15 minutes
+4. Lab 4: Integrate x402 with API Gateway and the SH REST API - 7 minutes
+5. Lab 5: Test With an Agent Client - 10 minutes
+6. Lab 6: Verify Idempotency and Payment Receipts - 5 minutes
 7. Lab 7 (Optional): Polish Responses With OCI Generative AI - 20 minutes
-8. Lab 8: Troubleshooting and Next Steps - 10 minutes
+8. Lab 8: Troubleshooting and Next Steps - 5 minutes
 
 ## Acknowledgements
 

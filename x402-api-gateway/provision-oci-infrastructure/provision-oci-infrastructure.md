@@ -2,96 +2,102 @@
 
 ## Introduction
 
-You will set up an Autonomous Database, an API Gateway, a VCN, and a Functions application. The core workshop services can run on Free Tier eligible resources; optional Generative AI usage in Lab 7 may incur usage-based charges.
+You will use Oracle Cloud Shell to create the core OCI resources for the workshop. The helper script creates or reuses a VCN, public and private subnets, an Autonomous Database, an API Gateway, and a Functions application. You will still inspect the generated outputs so you know what the later labs use.
 
 ### Objectives
 
-- Create the core OCI resources for the workshop.
-- Provision an Autonomous Database for SH sample data.
-- Create an API Gateway, Functions application, and network path for the x402 flow.
-- Configure local OCI and Fn CLI tooling for deployment.
+- Prepare a Cloud Shell working directory for the workshop.
+- Configure the required workshop variables.
+- Create or reuse the core OCI resources.
+- Save the generated resource OCIDs and gateway endpoint for later labs.
 
 Estimated Time: 10 minutes
 
-## Task 1: Sign Into Oracle Cloud
+## Task 1: Open Cloud Shell and Prepare the Workspace
 
-1. Navigate to [cloud.oracle.com](https://cloud.oracle.com) and sign in.
-2. If you do not have an account, create one at [oracle.com/cloud/free](https://oracle.com/cloud/free).
-3. Note your home region.
+1. Sign in to [cloud.oracle.com](https://cloud.oracle.com).
+2. Open **Cloud Shell** from the OCI Console header.
+3. Create a workshop directory and download the environment template:
 
-## Task 2: Create an Autonomous Database Instance
+    ```
+    <copy>
+    mkdir -p x402-workshop
+    cd x402-workshop
 
-1. From the OCI Console, navigate to **Databases** > **Autonomous Database**.
-2. Click **Create Autonomous Database**.
-3. Fill in:
-   - **Workload Type:** Transaction Processing (ATP)
-   - **Deployment Type:** Shared Infrastructure
-   - **Display Name:** `x402-monetized-db`
-   - **Database Name:** `x402db`
-   - **Admin Password:** Create a strong password and save it
-   - **Network Access:** Allow secure external connectivity
-   - **License Type:** License Included
-4. Click **Create**. Wait for the database to reach **Available** state (2-3 minutes).
+    export WORKSHOP_FILES_BASE="https://raw.githubusercontent.com/oracle-livelabs/developer/main/x402-api-gateway"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/provision-oci-infrastructure/files/workshop.env.example"
+    cp workshop.env.example workshop.env
+    </copy>
+    ```
 
-> **Note:** Every Autonomous Database ships with the SH, SSB, CO, OE, HR, and PM sample schemas pre-installed. You will use SH (Sales History) in this workshop - it contains realistic sales transaction data, products, customers, and channels.
+4. Edit `workshop.env`:
 
-## Task 3: Create the Workshop VCN
+    ```
+    <copy>
+    vi workshop.env
+    </copy>
+    ```
 
-1. Navigate to **Networking** > **Virtual cloud networks**.
-2. Click **Start VCN Wizard**.
-3. Select **Create VCN with Internet Connectivity** and click **Start VCN Wizard**.
-4. Fill in:
-   - **VCN Name:** `x402-workshop-vcn`
-   - **VCN CIDR Block:** `10.0.0.0/16`
-   - **Public Subnet CIDR Block:** `10.0.1.0/24`
-   - **Private Subnet CIDR Block:** `10.0.2.0/24`
-5. Click **Next**, review the resources, and click **Create**.
-6. Confirm the wizard created an internet gateway, NAT gateway, service gateway, and route tables.
+5. Set your compartment OCID, region, tenancy namespace, passwords, and test wallet address. Keep the defaults for names unless you need to avoid a naming collision.
 
-The public subnet hosts the public API Gateway endpoint. The private subnet hosts OCI Functions. The NAT gateway lets the middleware function call the x402 facilitator and your public ORDS URL. The service gateway gives Functions private access to OCI services such as Generative AI.
+## Task 2: Run the Core Bootstrap Script
 
-## Task 4: Create an API Gateway
+1. Download and run the bootstrap script:
 
-1. Navigate to **Developer Services** > **API Gateway**.
-2. Click **Create API Gateway**.
-3. Fill in:
-   - **Name:** `x402-api-gateway`
-   - **Type:** Public
-   - **VCN:** `x402-workshop-vcn`
-   - **Subnet:** Public regional subnet, `10.0.1.0/24`
-4. Click **Create**. Wait for **Active** state.
-5. Note the gateway hostname - you will use it in Lab 4.
+    ```
+    <copy>
+    curl -fsSLO "$WORKSHOP_FILES_BASE/provision-oci-infrastructure/files/bootstrap-core.sh"
+    chmod +x bootstrap-core.sh
+    ./bootstrap-core.sh
+    </copy>
+    ```
 
-## Task 5: Create a Functions Application
+2. When the script finishes, load the generated outputs:
 
-1. Navigate to **Developer Services** > **Functions**.
-2. Click **Create Application**.
-3. Fill in:
-   - **Application Name:** `x402-functions`
-   - **VCN:** `x402-workshop-vcn`
-   - **Subnets:** Private regional subnet, `10.0.2.0/24`
-4. Click **Create**.
+    ```
+    <copy>
+    source workshop-outputs.env
+    env | grep -E 'ADB_OCID|API_GATEWAY|FUNCTIONS_APP|SUBNET|VCN'
+    </copy>
+    ```
 
-## Task 6: Set Up Local Tools
+3. Confirm the output includes:
 
+    - `ADB_OCID`
+    - `API_GATEWAY_OCID`
+    - `API_GATEWAY_ENDPOINT`
+    - `FUNCTIONS_APP_OCID`
+    - `PUBLIC_SUBNET_OCID`
+    - `PRIVATE_SUBNET_OCID`
 
-1. Follow the instructions below to complete this task.
+## Task 3: Review What the Script Created
 
-    Install the OCI CLI and Fn CLI as described in the standard OCI Functions quickstart. Configure both to point at your tenancy and compartment.
+1. In the OCI Console, confirm these resources exist:
 
-        ```bash
-        # OCI CLI
-        curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh | bash
-        oci setup config
+    - VCN: `x402-workshop-vcn`
+    - Public subnet: `x402-public-subnet`
+    - Private subnet: `x402-private-subnet`
+    - Autonomous Database: `x402-monetized-db`
+    - API Gateway: `x402-api-gateway`
+    - Functions application: `x402-functions`
 
-        # Fn CLI
-        curl -LSs https://raw.githubusercontent.com/fnproject/cli/master/install | sh
-        fn use context default
-        fn update context oracle.compartment-id YOUR_COMPARTMENT_OCID
-        fn update context registry YOUR_REGION_KEY.ocir.io/YOUR_TENANCY_NAMESPACE/x402
-        ```
+2. Check the network shape:
 
-    You will deploy your first function in Lab 3.
+    - API Gateway uses the public subnet.
+    - Functions uses the private subnet.
+    - The private subnet has NAT access for x402 facilitator calls.
+    - The private subnet has service gateway access for OCI services.
+
+3. Keep Cloud Shell open. You will use the same `x402-workshop` directory for the remaining core labs.
+
+## Learn more
+
+- [Oracle Autonomous AI Database documentation](https://docs.oracle.com/en/cloud/paas/autonomous-database/index.html)
+- [OCI Networking overview](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm)
+- [OCI Virtual Networking wizards](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/quickstartnetworking.htm)
+- [OCI API Gateway documentation](https://docs.oracle.com/en-us/iaas/Content/APIGateway/home.htm)
+- [OCI Functions documentation](https://docs.oracle.com/en-us/iaas/Content/Functions/home.htm)
+- [OCI Functions QuickStart on Local Host](https://docs.oracle.com/en-us/iaas/Content/Functions/Tasks/functionsquickstartlocalhost.htm)
 
 ## Acknowledgements
 

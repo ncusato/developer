@@ -1,0 +1,9 @@
+schema_version: 20180708
+name: x402-middleware
+version: 0.0.1
+runtime: node
+build_image: fnproject/node:18-dev
+run_image: fnproject/node:18
+entrypoint: node func.js
+memory: 256
+timeout: 30

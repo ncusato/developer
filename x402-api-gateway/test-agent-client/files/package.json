@@ -1,0 +1,10 @@
+{
+  "name": "x402-agent-client",
+  "version": "1.0.0",
+  "description": "Agent-style x402 client for the OCI LiveLabs workshop",
+  "main": "client.js",
+  "dependencies": {
+    "axios": "^1.7.0",
+    "viem": "^2.21.0"
+  }
+}

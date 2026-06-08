@@ -1,0 +1,10 @@
+{
+  "name": "x402-middleware",
+  "version": "1.0.0",
+  "description": "x402 payment middleware for OCI",
+  "main": "func.js",
+  "dependencies": {
+    "@fnproject/fdk": ">=0.0.20",
+    "axios": "^1.7.0"
+  }
+}

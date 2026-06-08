@@ -2,84 +2,89 @@
 
 ## Introduction
 
-You will create an API Gateway deployment that sends incoming SH API requests to the x402 middleware function as an Oracle Functions backend. The function returns HTTP 402 when payment is missing, then verifies payment, calls ORDS AutoREST, and returns the paid response.
+You will connect the public API Gateway to the x402 middleware function. The deployment routes SH API requests to the function, and the function decides whether to return a payment challenge or the paid ORDS response.
 
 ### Objectives
 
-- Create an OCI API Gateway deployment for the SH API.
-- Attach the x402 middleware as an Oracle Functions backend.
-- Let the function orchestrate payment verification and ORDS AutoREST calls.
-- Confirm the gateway returns HTTP 402 when payment is missing.
+- Create or update the API Gateway deployment.
+- Add routes for the SH AutoREST resources.
+- Forward requests to the x402 middleware function.
+- Confirm an unpaid request returns HTTP 402.
 
-Estimated Time: 15 minutes
+Estimated Time: 7 minutes
 
-## Task 1: Create a Deployment in API Gateway
+## Task 1: Run the Gateway Route Helper
 
-1. Navigate to your `x402-api-gateway`.
-2. Click **Deployments** > **Create Deployment** > **From Scratch**.
-3. Fill in:
-   - **Name:** `x402-sh-deployment`
-   - **Path Prefix:** `/v1`
-4. Click **Next**.
+1. In Cloud Shell, return to your workshop directory:
 
-## Task 2: Keep authentication disabled at the gateway
+    ```
+    <copy>
+    cd ~/x402-workshop
+    source workshop.env
+    source workshop-outputs.env
+    </copy>
+    ```
 
-1. On the **Authentication** step, select **No Authentication** for this workshop deployment.
-2. Keep authentication and payment enforcement inside the `x402-middleware` function.
-3. Click **Next**.
+2. Download and run the route helper:
 
-## Task 3: Add routes that invoke the x402 middleware
+    ```
+    <copy>
+    curl -fsSLO "$WORKSHOP_FILES_BASE/integrate-api-gateway/files/configure-gateway-routes.sh"
+    chmod +x configure-gateway-routes.sh
+    ./configure-gateway-routes.sh
+    </copy>
+    ```
 
-1. Click **Add Route** for each of the following:
+3. Reload the generated outputs:
 
-   **Sales:**
-   - Path: `/sh/sales`
-   - Methods: `GET`
-   - Backend type: `Oracle Functions`
-   - Application: `x402-functions`
-   - Function: `x402-middleware`
+    ```
+    <copy>
+    source workshop-outputs.env
+    echo "$GATEWAY_URL"
+    </copy>
+    ```
 
-   **Products:**
-   - Path: `/sh/products`
-   - Backend type: `Oracle Functions`
-   - Application: `x402-functions`
-   - Function: `x402-middleware`
+The helper creates or updates `x402-sh-deployment` with routes for `sales`, `products`, `customers`, and `channels`.
 
-   **Customers:**
-   - Path: `/sh/customers`
-   - Backend type: `Oracle Functions`
-   - Application: `x402-functions`
-   - Function: `x402-middleware`
+## Task 2: Verify the 402 Payment Gate
 
-   **Channels:**
-   - Path: `/sh/channels`
-   - Backend type: `Oracle Functions`
-   - Application: `x402-functions`
-   - Function: `x402-middleware`
+1. Call the gateway without payment:
 
-2. For each route, enable **Forward query parameters** so the middleware receives the AutoREST filter syntax and can pass it to ORDS.
-3. Click **Next**, review, and **Create**. Wait for **Active** state.
+    ```
+    <copy>
+    curl -i "$GATEWAY_URL/sh/sales?limit=5"
+    </copy>
+    ```
 
-## Task 4: Test the Payment Gate
+2. Confirm the response includes:
 
+    ```
+    <copy>
+    HTTP/2 402
+    payment-required: eyJ4NDAyVmVyc2lvbiI6Mi...
+    </copy>
+    ```
 
-1. Follow the instructions below to complete this task.
+3. If you see `502`, check the Functions logs and confirm the API Gateway deployment references the `x402-middleware` function.
 
-        ```bash
-        curl -i "https://YOUR-GATEWAY-URL/v1/sh/sales?limit=5"
-        ```
+## Task 3: Inspect the Routes
 
-    Expected:
+1. In the OCI Console, open **Developer Services** > **API Gateway**.
+2. Open `x402-api-gateway`, then `x402-sh-deployment`.
+3. Confirm these routes use **Oracle Functions** as the backend:
 
-        ```
-        HTTP/2 402
-        content-type: application/json
-        payment-required: eyJ4NDAyVmVyc2lvbiI6Mi...
+    - `/sh/sales`
+    - `/sh/products`
+    - `/sh/customers`
+    - `/sh/channels`
 
-        {"error":"Payment Required",...}
-        ```
+## Learn more
 
-    The API Gateway route now invokes the x402 middleware, and the middleware can return the x402 `402 Payment Required` response directly to the client.
+- [OCI API Gateway documentation](https://docs.oracle.com/en-us/iaas/Content/APIGateway/home.htm)
+- [API Gateway concepts](https://docs.oracle.com/en-us/iaas/Content/APIGateway/Concepts/apigatewayconcepts.htm)
+- [Adding a Function in OCI Functions as an API Gateway back end](https://docs.oracle.com/en-us/iaas/Content/APIGateway/Tasks/apigatewayusingfunctionsbackend.htm)
+- [OCI Functions documentation](https://docs.oracle.com/en-us/iaas/Content/Functions/home.htm)
+- [x402 HTTP 402 documentation](https://docs.x402.org/core-concepts/http-402)
 
 ## Acknowledgements
 

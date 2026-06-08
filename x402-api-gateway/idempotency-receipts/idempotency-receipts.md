@@ -1,131 +1,86 @@
-# Lab 6: Add Idempotency and Payment Receipts
+# Lab 6: Verify Idempotency and Payment Receipts
 
 ## Introduction
 
-The receipts table from Lab 3 is already in place. In this lab you will update the middleware to check it before settling (preventing double-charges on client retries) and persist a record after every successful settlement.
+The middleware already includes receipt storage and nonce checks. In this lab you will replay the last payment signature, confirm the API returns data without settling twice, and query the receipt table as a simple revenue dashboard.
 
 ### Objectives
 
-- Add ORDS OAuth token handling for receipt writes.
-- Check existing receipt nonces before settlement.
-- Persist successful settlement receipts.
-- Query receipt data as a revenue dashboard.
+- Replay a saved x402 payment signature.
+- Confirm duplicate requests return data without duplicate settlement.
+- Query receipt records in Autonomous Database.
+- Understand how receipt data supports API revenue reporting.
 
-Estimated Time: 15 minutes
+Estimated Time: 5 minutes
 
-## Task 1: Update the Middleware
+## Task 1: Replay the Last Payment
 
+1. In Cloud Shell, run the client in replay mode:
 
-1. Follow the instructions below to complete this task.
+    ```
+    <copy>
+    cd ~/x402-workshop/x402-client
+    PRIVATE_KEY="0xYOUR_TESTNET_PRIVATE_KEY" REPLAY_LAST_PAYMENT=true ./run-client.sh
+    </copy>
+    ```
 
-    Edit `func.js` in `x402-middleware`. Add a helper to get an OAuth token:
+2. Confirm the output shows:
 
-        ```javascript
-        let cachedToken = null;
-        let tokenExpiry = 0;
+    - `Replay status: 200`
+    - Returned SH rows
+    - A payment response with `replayed: true`, or the same transaction hash from the first run
 
-        async function getOrdsToken() {
-          if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
-          const resp = await axios.post(
-            `${ORDS_RECEIPTS_URL}oauth/token`,
-            'grant_type=client_credentials',
-            {
-              auth: { username: ORDS_CLIENT_ID, password: ORDS_CLIENT_SECRET },
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            }
-          );
-          cachedToken = resp.data.access_token;
-          tokenExpiry = Date.now() + (resp.data.expires_in - 30) * 1000;
-          return cachedToken;
-        }
+3. If replay fails, confirm `.last-payment-signature` exists:
 
-        async function checkExistingReceipt(nonce) {
-          const token = await getOrdsToken();
-          const resp = await axios.get(
-            `${ORDS_RECEIPTS_URL}x402_receipts/${nonce}`,
-            { headers: { Authorization: `Bearer ${token}` }, validateStatus: () => true }
-          );
-          return resp.status === 200 ? resp.data : null;
-        }
+    ```
+    <copy>
+    ls -l .last-payment-signature
+    </copy>
+    ```
 
-        async function writeReceipt(receipt) {
-          const token = await getOrdsToken();
-          await axios.post(
-            `${ORDS_RECEIPTS_URL}x402_receipts/`,
-            receipt,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        }
-        ```
+## Task 2: Query the Receipt Dashboard
 
-    Then update the main handler - after `verifyPayment` succeeds, check the nonce before settling:
+1. In Database Actions SQL, sign in as `x402_app`.
+2. Run:
 
-        ```javascript
-        const nonce = verification.payload.payload.authorization.nonce;
-        const existing = await checkExistingReceipt(nonce);
+    ```
+    <copy>
+    SELECT
+      resource_path,
+      COUNT(*)                         AS calls,
+      COUNT(DISTINCT payer_address)    AS unique_payers,
+      SUM(TO_NUMBER(amount)) / 1000000 AS total_usdc
+    FROM x402_receipts
+    WHERE status = 'settled'
+    GROUP BY resource_path
+    ORDER BY total_usdc DESC;
+    </copy>
+    ```
 
-        if (existing && existing.status === 'settled') {
-          // Already paid - return the resource again without settling twice.
-          const ordsResp = await axios.get(buildOrdsUrl(path), { validateStatus: () => true });
-          setStatus(ctx, ordsResp.status);
-          setResponseHeader(ctx, 'PAYMENT-RESPONSE',
-            Buffer.from(JSON.stringify({ transaction: existing.tx_hash, replayed: true })).toString('base64')
-          );
-          setResponseHeader(ctx, 'Content-Type', 'application/json');
-          return ordsResp.data;
-        }
+3. Confirm the dashboard shows at least one settled call for the `/sh/sales` path.
 
-        // ... existing settlement logic ...
+## Task 3: Review the Idempotency Pattern
 
-        // After successful settlement:
-        await writeReceipt({
-          nonce,
-          payer_address: verification.payload.payload.authorization.from,
-          amount: verification.requirements.accepts[0].maxAmountRequired,
-          asset: verification.requirements.accepts[0].asset,
-          network: verification.requirements.accepts[0].network,
-          tx_hash: settlement.data.transaction,
-          resource_path: path,
-          status: 'settled',
-          settled_at: new Date().toISOString()
-        });
-        ```
+1. Open the middleware receipt logic:
 
-    Keep the Lab 3 ORDS fetch-and-return block after the receipt write. The middleware should still return the requested SH data; the receipt logic only prevents duplicate settlement.
+    ```
+    <copy>
+    cd ~/x402-workshop/x402-middleware
+    grep -n "checkExistingReceipt\\|writeReceipt\\|replayed" func.js
+    </copy>
+    ```
 
-    Redeploy:
+2. The nonce is the payment identifier. If the same nonce appears again with a settled receipt, the middleware skips settlement and returns the resource again.
 
-        ```bash
-        fn -v deploy --app x402-functions
-        ```
+This protects clients from double charges during retries, network timeouts, or agent orchestration failures.
 
-## Task 2: Verify Idempotency
+## Learn more
 
-
-1. Follow the instructions below to complete this task.
-
-    Run the client from Lab 5 twice in quick succession. The second call should short-circuit on the existing receipt without re-settling.
-
-## Task 3: Query Your Revenue Dashboard
-
-
-1. Follow the instructions below to complete this task.
-
-    As `x402_app` in Database Actions SQL:
-
-        ```sql
-        SELECT
-          resource_path,
-          COUNT(*)                              AS calls,
-          COUNT(DISTINCT payer_address)         AS unique_payers,
-          SUM(TO_NUMBER(amount)) / 1000000      AS total_usdc
-        FROM x402_receipts
-        WHERE status = 'settled'
-        GROUP BY resource_path
-        ORDER BY total_usdc DESC;
-        ```
-
-    You now have a queryable revenue dashboard for your monetized API, sitting in the same database as the data being sold.
+- [x402 Payment-Identifier idempotency extension](https://docs.x402.org/extensions/payment-identifier)
+- [x402 signed offers and receipts](https://docs.x402.org/extensions/offer-receipt)
+- [ORDS REST API: Create an OAuth client](https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/24.4/orrst/op-ords-rest-clients-post.html)
+- [ORDS Developer's Guide: AutoREST](https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/24.4/orddg/developing-REST-applications.html)
+- [Oracle Autonomous AI Database documentation](https://docs.oracle.com/en/cloud/paas/autonomous-database/index.html)
 
 ## Acknowledgements
 

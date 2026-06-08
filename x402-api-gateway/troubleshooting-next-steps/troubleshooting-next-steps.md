@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Use this lab to diagnose common issues and decide how to take the x402 gateway pattern further. The items here should also guide the final publish review before the workshop moves into an official LiveLabs catalog entry.
+Use this lab to diagnose common issues in the automated 60-minute path and decide how to take the x402 gateway pattern further.
 
 ### Objectives
 
@@ -10,37 +10,42 @@ Use this lab to diagnose common issues and decide how to take the x402 gateway p
 - Identify production hardening work before mainnet use.
 - Choose practical extensions for monetized Oracle data APIs.
 
-Estimated Time: 10 minutes
+Estimated Time: 5 minutes
 
-## Task 1: Troubleshoot common issues
+## Task 1: Troubleshoot Common Issues
 
 1. Match the symptom you see to the likely fix below.
 
-    **Gateway returns 502 instead of 402:** Confirm your function has the correct IAM policy so API Gateway can invoke it. Check the Functions logs in the OCI Console.
+    **Bootstrap script fails on a missing variable:** Open `workshop.env`, fill in the placeholder value, and rerun the same script. The helpers are additive and reuse existing resources by display name where practical.
 
-    **Facilitator verification fails:** The public testnet facilitator can be intermittent. Try the CDP facilitator endpoint or stand up your own using the open-source `x402-facilitator` reference implementation.
+    **Gateway returns 502 instead of 402:** Confirm the `x402-middleware` function exists and check the Functions logs in the OCI Console.
 
-    **Wallet has no USDC despite faucet:** Base Sepolia USDC uses a specific contract address. Make sure your wallet uses Base Sepolia (chain ID 84532), not Ethereum Sepolia.
+    **ORDS returns 404:** Confirm `UPSTREAM_BASE` ends in `/ords/sh/` and that the `SALES`, `PRODUCTS`, `CUSTOMERS`, and `CHANNELS` tables are REST-enabled.
 
-    **Function cold starts feel slow:** Increase the function memory to 512MB and consider provisioned concurrency in production.
+    **Facilitator verification fails:** Confirm the wallet has Base Sepolia test USDC, the `NETWORK` value is `eip155:84532`, and the `ASSET_ADDRESS` value matches the Base Sepolia USDC contract.
 
-    **ORDS returns 401 from the middleware:** Token may have expired without the cache realizing it. Verify the OAuth client has the right privileges and that the `expires_in` math in `getOrdsToken()` accounts for clock skew.
+    **Receipt writes fail:** Confirm the ORDS OAuth client has the receipt privilege and that `ORDS_CLIENT_ID`, `ORDS_CLIENT_SECRET`, and `ORDS_RECEIPTS_URL` are set in `workshop.env`.
 
-## Task 2: Choose next steps
+## Task 2: Choose Next Steps
 
 1. Review these extension paths before moving from a testnet workshop to a production design.
 
     - **More schemas:** Repeat the AutoREST pattern on SSB, OE, or your own schemas.
-    - **Custom REST modules:** ORDS supports hand-crafted REST modules with SQL/PLSQL handlers behind the same x402 gate.
-    - **Tiered pricing:** Implement the experimental x402 `upto` scheme to charge based on row count.
-    - **MCP integration:** Wrap this as an MCP server. Agents discover the database tools, x402 pays for the queries, ORDS serves the data.
-    - **Mainnet:** Swap `NETWORK` to `eip155:8453` (Base mainnet) and use the mainnet USDC contract. Coordinate with finance and compliance.
+    - **Custom REST modules:** Use ORDS modules with SQL or PL/SQL handlers behind the same x402 gate.
+    - **Tiered pricing:** Add pricing rules by endpoint, row count, or response enrichment.
+    - **MCP integration:** Wrap this as an MCP server so agents discover tools and pay through x402.
+    - **Mainnet:** Swap to Base mainnet and coordinate finance, compliance, observability, and key management.
 
-## Learn More
+## Learn more
 
-- [OCI API Gateway documentation](https://docs.oracle.com/en-us/iaas/Content/APIGateway/home.htm)
-- [OCI Functions documentation](https://docs.oracle.com/en-us/iaas/Content/Functions/home.htm)
-- [ORDS AutoREST documentation](https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/)
+- [x402 documentation](https://docs.x402.org/introduction)
+- [x402 facilitators](https://docs.x402.org/dev-tools/facilitators)
+- [x402 networks and token support](https://docs.x402.org/core-concepts/network-and-token-support)
+- [OCI API Gateway troubleshooting and documentation](https://docs.oracle.com/en-us/iaas/Content/APIGateway/home.htm)
+- [OCI Functions troubleshooting and documentation](https://docs.oracle.com/en-us/iaas/Content/Functions/home.htm)
+- [ORDS Developer's Guide: Developing REST applications](https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/24.4/orddg/developing-REST-applications.html)
+- [Base network faucets](https://docs.base.org/base-chain/network-information/network-faucets)
+- [Circle testnet faucet](https://faucet.circle.com/)
 
 ## Acknowledgements
 
