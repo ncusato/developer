@@ -58,11 +58,19 @@ fi
 
 echo
 echo "The canonical endpoint did not return the expected ORDS items array."
-echo "Testing common fallback aliases so you can see what ORDS published."
+echo "Testing schema metadata and common fallback aliases so you can see what ORDS published."
 echo
 
 found_any=false
 for schema_alias in market x402_rest sh; do
+  metadata_url="$host/ords/$schema_alias/metadata-catalog/"
+  metadata_status="$(request_status "$metadata_url")"
+  printf '%-48s HTTP %s\n' "/ords/$schema_alias/metadata-catalog/" "$metadata_status"
+  if [[ "$metadata_status" =~ ^2 ]]; then
+    echo "  Schema alias responded. Metadata sample:"
+    print_sample | sed 's/^/  /'
+  fi
+
   for object_alias in signals market_signals sales; do
     url="$host/ords/$schema_alias/$object_alias/?limit=1"
     status="$(request_status "$url")"

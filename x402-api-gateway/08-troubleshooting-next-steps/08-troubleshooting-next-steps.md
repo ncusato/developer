@@ -22,7 +22,7 @@ Estimated Time: 5 minutes
 
     **Gateway returns 502 instead of 402:** Confirm the `x402-middleware` function exists and check the Functions logs in the OCI Console.
 
-    **ORDS returns 404:** Run `./verify-market-ords.sh` from Lab 2. If `/ords/market/signals/` returns 404, re-download and rerun `setup-market-autorest.sql` as `ADMIN`, then rerun the verifier before saving `UPSTREAM_BASE`.
+    **ORDS returns 404:** Run `./verify-market-ords.sh` from Lab 2. If `/ords/market/signals/` returns 404, re-download `setup-market-autorest.sql`, confirm it prints `reset-enabled`, rerun it as `ADMIN`, then rerun the verifier before saving `UPSTREAM_BASE`.
 
     **Database Actions REST overview shows 0 AutoREST objects:** Check which schema is signed in. The `ADMIN` REST overview is schema-scoped and can show zero objects even when `X402_REST` endpoints work. Verify with `curl "$ADB_ORDS_HOST/ords/market/signals/?limit=5"`.
 

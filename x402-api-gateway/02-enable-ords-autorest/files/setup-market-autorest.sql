@@ -1,6 +1,28 @@
 -- Run as ADMIN in Database Actions SQL.
 -- This script creates a workshop-owned market intelligence dataset for paid API simulation.
 
+SELECT 'setup-market-autorest.sql version 2026-06-09 reset-enabled' AS status
+FROM dual;
+
+BEGIN
+  BEGIN
+    ORDS.DROP_REST_FOR_SCHEMA('X402_REST');
+  EXCEPTION
+    WHEN OTHERS THEN
+      DBMS_OUTPUT.PUT_LINE('ORDS metadata reset skipped: ' || SQLERRM);
+  END;
+
+  BEGIN
+    EXECUTE IMMEDIATE 'DROP USER x402_rest CASCADE';
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE != -1918 THEN
+        RAISE;
+      END IF;
+  END;
+END;
+/
+
 DECLARE
   user_count NUMBER;
 BEGIN
@@ -15,6 +37,12 @@ BEGIN
   END IF;
 
   EXECUTE IMMEDIATE 'GRANT CONNECT, RESOURCE, UNLIMITED TABLESPACE TO x402_rest';
+  BEGIN
+    EXECUTE IMMEDIATE 'GRANT DWROLE TO x402_rest';
+  EXCEPTION
+    WHEN OTHERS THEN
+      DBMS_OUTPUT.PUT_LINE('DWROLE grant skipped: ' || SQLERRM);
+  END;
 END;
 /
 
@@ -268,7 +296,7 @@ END;
 /
 
 BEGIN
-  ORDS_ADMIN.ENABLE_SCHEMA(
+  ORDS.ENABLE_SCHEMA(
     p_enabled             => TRUE,
     p_schema              => 'X402_REST',
     p_url_mapping_type    => 'BASE_PATH',
@@ -332,3 +360,7 @@ FROM all_tables
 WHERE owner = 'X402_REST'
 AND table_name IN ('MARKET_SIGNALS', 'API_PRODUCTS', 'BUYER_SEGMENTS', 'PRICING_BENCHMARKS')
 ORDER BY table_name;
+
+SELECT 'Expected endpoint' AS check_name,
+       '/ords/market/signals/?limit=5' AS endpoint_path
+FROM dual;

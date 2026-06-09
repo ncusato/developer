@@ -60,6 +60,7 @@ Estimated Time: 8 minutes
 3. Paste and run the contents of `setup-market-autorest.sql`.
 4. Confirm the final queries return:
 
+    - `setup-market-autorest.sql version 2026-06-09 reset-enabled`.
     - `X402_REST` with `OPEN` account status.
     - Four tables owned by `X402_REST`: `API_PRODUCTS`, `BUYER_SEGMENTS`, `MARKET_SIGNALS`, and `PRICING_BENCHMARKS`.
 
@@ -72,7 +73,7 @@ The SQL helper maps ORDS to `/ords/market/` and exposes these endpoints:
 - `/ords/market/segments/`
 - `/ords/market/pricing/`
 
-The helper is safe to rerun. If an earlier attempt enabled `X402_REST` with another ORDS base path, the script disables that mapping before enabling `/ords/market/`.
+The helper is safe to rerun for this workshop. It resets ORDS metadata, drops only the workshop-owned `X402_REST` user, recreates the market tables, and then enables `/ords/market/`. It does not drop the Autonomous Database or any OCI resources.
 
 ## Task 3: Verify the ORDS Endpoint
 
@@ -100,7 +101,7 @@ The helper is safe to rerun. If an earlier attempt enabled `X402_REST` with anot
 
 4. Confirm the verifier prints `Canonical market endpoint is ready`.
 
-    If the verifier prints `HTTP status: 404`, the market tables were created but ORDS did not publish the canonical `/ords/market/signals/` path. Re-download `setup-market-autorest.sql`, replace the password placeholder again, run it as `ADMIN`, and then rerun the verifier. This usually means an older SQL helper was run or a previous ORDS mapping stayed enabled.
+    If the verifier prints `HTTP status: 404`, the market tables were created but ORDS did not publish the canonical `/ords/market/signals/` path. Re-download `setup-market-autorest.sql`, confirm the first query shows `reset-enabled`, replace the password placeholder again, run it as `ADMIN`, and then rerun the verifier.
 
 5. Test the `signals` endpoint directly:
 
