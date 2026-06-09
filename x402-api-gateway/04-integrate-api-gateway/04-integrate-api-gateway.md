@@ -1,13 +1,13 @@
-# Lab 4: Integrate x402 with API Gateway and the SH Data REST API
+# Lab 4: Integrate x402 with API Gateway and the Market Intelligence API
 
 ## Introduction
 
-You will connect the public API Gateway to the x402 middleware function. The deployment routes SH API requests to the function, and the function decides whether to return a payment challenge or the paid ORDS response.
+You will connect the public API Gateway to the x402 middleware function. The deployment routes market intelligence API requests to the function, and the function decides whether to return a payment challenge or the paid ORDS response.
 
 ### Objectives
 
 - Create or update the API Gateway deployment.
-- Add routes for the SH data AutoREST resources.
+- Add routes for the market intelligence AutoREST resources.
 - Forward requests to the x402 middleware function.
 - Confirm an unpaid request returns HTTP 402.
 
@@ -44,7 +44,7 @@ Estimated Time: 7 minutes
     </copy>
     ```
 
-The helper creates or updates `x402-sh-deployment` with routes for `sales`, `products`, `customers`, and `channels`.
+The helper creates or updates `x402-market-deployment` with routes for `signals`, `products`, `segments`, and `pricing`.
 
 ## Task 2: Verify the 402 Payment Gate
 
@@ -52,7 +52,7 @@ The helper creates or updates `x402-sh-deployment` with routes for `sales`, `pro
 
     ```
     <copy>
-    curl -i "$GATEWAY_URL/sh/sales?limit=5"
+    curl -i "$GATEWAY_URL/market/signals?limit=5"
     </copy>
     ```
 
@@ -70,13 +70,13 @@ The helper creates or updates `x402-sh-deployment` with routes for `sales`, `pro
 ## Task 3: Inspect the Routes
 
 1. In the OCI Console, open **Developer Services** > **API Gateway**.
-2. Open `x402-api-gateway`, then `x402-sh-deployment`.
+2. Open `x402-api-gateway`, then `x402-market-deployment`.
 3. Confirm these routes use **Oracle Functions** as the backend:
 
-    - `/sh/sales`
-    - `/sh/products`
-    - `/sh/customers`
-    - `/sh/channels`
+    - `/market/signals`
+    - `/market/products`
+    - `/market/segments`
+    - `/market/pricing`
 
 ## Learn more
 

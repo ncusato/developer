@@ -20,8 +20,8 @@
             "filename": "../../01-provision-oci-infrastructure/01-provision-oci-infrastructure.md"
         },
         {
-            "title": "Lab 2: Expose SH Data with ORDS AutoREST",
-            "description": "Use a SQL helper to expose selected SH sample data through X402_REST views and verify the generated REST API.",
+            "title": "Lab 2: Create a Market Intelligence API with ORDS AutoREST",
+            "description": "Use a SQL helper to seed an agent market intelligence dataset and verify the generated REST API.",
             "type": "livelabs",
             "filename": "../../02-enable-ords-autorest/02-enable-ords-autorest.md"
         },
@@ -32,14 +32,14 @@
             "filename": "../../03-deploy-x402-middleware/03-deploy-x402-middleware.md"
         },
         {
-            "title": "Lab 4: Integrate x402 with API Gateway and the SH Data REST API",
+            "title": "Lab 4: Integrate x402 with API Gateway and the Market Intelligence API",
             "description": "Use a route helper to wire API Gateway routes to the x402 middleware function.",
             "type": "livelabs",
             "filename": "../../04-integrate-api-gateway/04-integrate-api-gateway.md"
         },
         {
             "title": "Lab 5: Test With an Agent Client",
-            "description": "Generate and run a Node.js agent-style client that pays for one SH-derived sales query.",
+            "description": "Generate and run a Node.js agent-style client that pays for one market signal query.",
             "type": "livelabs",
             "filename": "../../05-test-agent-client/05-test-agent-client.md"
         },

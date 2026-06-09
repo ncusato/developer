@@ -22,7 +22,7 @@ Estimated Time: 5 minutes
 
     **Gateway returns 502 instead of 402:** Confirm the `x402-middleware` function exists and check the Functions logs in the OCI Console.
 
-**ORDS returns 404:** Confirm `UPSTREAM_BASE` ends in `/ords/sh/` and that the `X402_REST` views `SALES`, `PRODUCTS`, `CUSTOMERS`, and `CHANNELS` are REST-enabled.
+    **ORDS returns 404:** Confirm `UPSTREAM_BASE` ends in `/ords/market/` and that the `X402_REST` tables `MARKET_SIGNALS`, `API_PRODUCTS`, `BUYER_SEGMENTS`, and `PRICING_BENCHMARKS` are REST-enabled.
 
     **Facilitator verification fails:** Confirm the wallet has Base Sepolia test USDC, the `NETWORK` value is `eip155:84532`, and the `ASSET_ADDRESS` value matches the Base Sepolia USDC contract.
 
@@ -32,7 +32,7 @@ Estimated Time: 5 minutes
 
 1. Review these extension paths before moving from a testnet workshop to a production design.
 
-    - **More schemas:** Repeat the AutoREST pattern on SSB, OE, or your own schemas.
+    - **More data products:** Add industry-specific tables for security, travel, finance, healthcare, or retail media signals.
     - **Custom REST modules:** Use ORDS modules with SQL or PL/SQL handlers behind the same x402 gate.
     - **Tiered pricing:** Add pricing rules by endpoint, row count, or response enrichment.
     - **MCP integration:** Wrap this as an MCP server so agents discover tools and pay through x402.

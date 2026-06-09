@@ -16,7 +16,7 @@ This lab adds optional summarization inside the x402 middleware function. After 
                                   |
                                   | verified + settled
                                   v
-[ORDS AutoREST -> SH-derived data]
+[ORDS AutoREST -> market intelligence data]
                                   |
                                   | optional enrichment
                                   v
@@ -114,7 +114,7 @@ Estimated Time: 20 minutes
       const sample = items.slice(0, 20);
       const resource = resourcePath.split('/').filter(Boolean).pop() || 'records';
 
-      return `You are a data analyst. The user queried the ${resource} endpoint of a sales database and received ${items.length} ${resource} records. Below are the first ${sample.length} as JSON.
+      return `You are a market intelligence analyst. The user queried the ${resource} endpoint of an agent-facing data product and received ${items.length} ${resource} records. Below are the first ${sample.length} as JSON.
 
     Write a concise 2-3 sentence summary highlighting notable patterns, outliers, or trends in this data. Reference actual numbers from the records. Do not restate the schema; provide insight.
 
@@ -202,15 +202,17 @@ Estimated Time: 20 minutes
     <copy>
     function priceFor(path) {
       const summarizeEnabled = process.env.SUMMARIZE_ENABLED === 'true';
-      const base = path.includes('/customers') ? 20000
-                 : path.includes('/sales')     ? 10000
+      const base = path.includes('/pricing') ? 50000
+                 : path.includes('/signals') ? 20000
+                 : path.includes('/segments') ? 15000
+                 : path.includes('/products') ? 10000
                  : 5000;
       return summarizeEnabled ? String(base * 5) : String(base);
     }
     </copy>
     ```
 
-    A raw sales query stays at $0.01. A summarized one becomes $0.05.
+    A raw market signal query stays at $0.02. A summarized one becomes $0.10.
 
 ## Task 7: Test the Summarized Response
 
@@ -220,9 +222,9 @@ Estimated Time: 20 minutes
     <copy>
     {
       "items": [
-        { "prod_id": 13, "cust_id": 987, "amount_sold": 1782.32 }
+        { "sector": "Cybersecurity", "signal_type": "automated_request_share_pct", "confidence_score": 95 }
       ],
-      "summary": "A small set of product IDs drives these high-value sales records, with the largest visible transaction above $1,700. Several rows share the same channel pattern, which suggests a useful follow-up query by channel_id.",
+      "summary": "Cybersecurity has the strongest confidence score in this sample at 95, with automated request share above 64%. Retail media also shows high agent demand growth, which makes both sectors strong candidates for paid monitoring endpoints.",
       "summaryModel": "cohere.command-latest",
       "summaryGeneratedAt": "2026-05-16T18:42:11.812Z"
     }

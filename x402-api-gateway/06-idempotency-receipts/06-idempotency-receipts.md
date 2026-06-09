@@ -27,7 +27,7 @@ Estimated Time: 5 minutes
 2. Confirm the output shows:
 
     - `Replay status: 200`
-    - Returned SH-derived rows
+    - Returned market signal rows
     - A payment response with `replayed: true`, or the same transaction hash from the first run
 
 3. If replay fails, confirm `.last-payment-signature` exists:
@@ -57,7 +57,7 @@ Estimated Time: 5 minutes
     </copy>
     ```
 
-3. Confirm the dashboard shows at least one settled call for the `/sh/sales` path.
+3. Confirm the dashboard shows at least one settled call for the `/market/signals` path.
 
 ## Task 3: Review the Idempotency Pattern
 

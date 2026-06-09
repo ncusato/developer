@@ -15,7 +15,7 @@ if [[ -f workshop-outputs.env ]]; then
 fi
 
 export OCI_CLI_REGION="${REGION:-}"
-DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-x402-sh-deployment}"
+DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-x402-market-deployment}"
 PATH_PREFIX="${PATH_PREFIX:-/v1}"
 
 require_var() {
@@ -50,10 +50,10 @@ EXISTING_DEPLOYMENT_OCID="$(oci api-gateway deployment list --compartment-id "$C
 SPEC_FILE="$(mktemp)"
 jq -n --arg functionId "$FUNCTION_OCID" '{
   routes: [
-    "/sh/sales",
-    "/sh/products",
-    "/sh/customers",
-    "/sh/channels"
+    "/market/signals",
+    "/market/products",
+    "/market/segments",
+    "/market/pricing"
   ] | map({
     path: .,
     methods: ["GET"],
@@ -98,4 +98,4 @@ EOF
 echo "API Gateway deployment is active."
 echo "Gateway URL: $DEPLOYMENT_ENDPOINT"
 echo "Test unpaid request:"
-echo "curl -i \"$DEPLOYMENT_ENDPOINT/sh/sales?limit=5\""
+echo "curl -i \"$DEPLOYMENT_ENDPOINT/market/signals?limit=5\""

@@ -23,8 +23,8 @@ const walletClient = createWalletClient({
 });
 
 async function callPaidEndpoint() {
-  const filter = encodeURIComponent(JSON.stringify({ amount_sold: { $gt: 1000 } }));
-  const targetUrl = `${GATEWAY_URL}/sh/sales?q=${filter}&limit=10`;
+  const filter = encodeURIComponent(JSON.stringify({ confidence_score: { $gte: 85 } }));
+  const targetUrl = `${GATEWAY_URL}/market/signals?q=${filter}&limit=10`;
 
   if (REPLAY_LAST_PAYMENT) {
     const savedHeader = fs.readFileSync(PAYMENT_SIGNATURE_FILE, 'utf8').trim();
@@ -109,7 +109,8 @@ async function callPaidEndpoint() {
   console.log('Paid status:', paid.status);
   console.log(`Rows returned: ${paid.data.items?.length || 0}`);
   if (paid.data.items?.[0]) {
-    console.log(`First sale amount: ${paid.data.items[0].amount_sold}`);
+    const first = paid.data.items[0];
+    console.log(`First signal: ${first.signal_type} in ${first.sector} (${first.confidence_score} confidence)`);
   }
   if (paid.headers['payment-response']) {
     const settlement = JSON.parse(Buffer.from(paid.headers['payment-response'], 'base64').toString());

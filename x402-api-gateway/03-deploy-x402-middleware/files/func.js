@@ -16,8 +16,10 @@ let cachedToken = null;
 let tokenExpiry = 0;
 
 function priceFor(path) {
-  if (path.includes('/customers')) return '20000';
-  if (path.includes('/sales')) return '10000';
+  if (path.includes('/pricing')) return '50000';
+  if (path.includes('/signals')) return '20000';
+  if (path.includes('/segments')) return '15000';
+  if (path.includes('/products')) return '10000';
   return '5000';
 }
 
@@ -49,6 +51,8 @@ function setResponseHeader(ctx, name, value) {
 function buildOrdsUrl(requestPath) {
   const [rawPath, query = ''] = requestPath.split('?');
   let resourcePath = rawPath
+    .replace(/^\/v1\/market\/?/, '')
+    .replace(/^\/market\/?/, '')
     .replace(/^\/v1\/sh\/?/, '')
     .replace(/^\/sh\/?/, '');
   if (resourcePath && !resourcePath.endsWith('/')) resourcePath += '/';

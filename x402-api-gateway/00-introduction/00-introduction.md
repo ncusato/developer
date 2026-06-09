@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this workshop, you will build a production-ready x402 payment gateway on Oracle Cloud Infrastructure that monetizes a real database API. You will take the **SH (Sales History)** sample schema that ships pre-loaded in every Autonomous Database, expose it as REST endpoints using ORDS AutoREST, and put it behind an x402 payment gate. The core path uses Oracle Cloud Shell helper assets so you can focus on the architecture, payment flow, and verification checkpoints.
+In this workshop, you will build a production-ready x402 payment gateway on Oracle Cloud Infrastructure that monetizes a realistic data API. You will create an agent market intelligence dataset in Autonomous Database, expose it as REST endpoints using ORDS AutoREST, and put it behind an x402 payment gate. The core path uses Oracle Cloud Shell helper assets so you can focus on the architecture, payment flow, and verification checkpoints.
 
 x402 is an open, HTTP-native payment standard that enables APIs to charge for access per-request, without API keys, subscriptions, or account creation. Settlement happens directly on blockchain using stablecoins.
 
@@ -11,7 +11,7 @@ The economic reason for this pattern is changing fast. "Dead internet theory" is
 When AI agents scrape, summarize, or repackage data instead of sending humans to pages, traditional ad targeting and referral models lose power. This workshop shows a different path: expose valuable data through APIs, require payment at the HTTP layer, and let agents pay for access instead of extracting value for free.
 
 By the end of this workshop, you will have:
-- A REST API auto-generated from `X402_REST` views over SH sample data using ORDS AutoREST
+- A REST API auto-generated from the `X402_REST` market intelligence dataset using ORDS AutoREST
 - An x402 payment gateway deployed on OCI API Gateway that protects the API
 - An OCI Function backend that returns the 402 challenge, validates payment signatures, settles transactions, and fetches the paid ORDS response
 - A Cloud Shell agent client that pays per query
@@ -24,8 +24,8 @@ Estimated Time: 60 minutes (80 with optional Gen AI lab)
 
 ### Objectives
 
-- Expose pre-loaded SH (Sales History) data through a workshop-owned REST schema
-- Generate REST endpoints for SH-derived views without writing code
+- Create a realistic paid market intelligence dataset in Autonomous Database
+- Generate REST endpoints for agent-facing data products without writing code
 - Provision OCI API Gateway and Functions with Cloud Shell automation
 - Deploy x402 middleware as an OCI Function from provided helper assets
 - Wire the gateway to charge per database query
@@ -44,14 +44,14 @@ Estimated Time: 60 minutes (80 with optional Gen AI lab)
 
 ![Architecture diagram showing API Gateway, x402 middleware, ORDS AutoREST, Autonomous Database, optional OCI Generative AI, and external x402 settlement services](images/x402-oci-lab-architecture.png)
 
-The request path starts with an AI agent or Node.js client calling OCI API Gateway. API Gateway invokes the x402 middleware function. The function returns the 402 challenge, verifies and settles the payment, writes receipts to Autonomous Database, fetches ORDS AutoREST data from `X402_REST` views over SH sample data, and can optionally call OCI Generative AI before returning the paid response.
+The request path starts with an AI agent or Node.js client calling OCI API Gateway. API Gateway invokes the x402 middleware function. The function returns the 402 challenge, verifies and settles the payment, writes receipts to Autonomous Database, fetches ORDS AutoREST data from the `X402_REST` market intelligence dataset, and can optionally call OCI Generative AI before returning the paid response.
 
 ## Labs
 
 1. **Lab 1:** Provision OCI Infrastructure (10 minutes)
-2. **Lab 2:** Expose SH Data with ORDS AutoREST (8 minutes)
+2. **Lab 2:** Create a Market Intelligence API with ORDS AutoREST (8 minutes)
 3. **Lab 3:** Deploy x402 Middleware as an OCI Function (15 minutes)
-4. **Lab 4:** Integrate x402 with API Gateway and the SH Data REST API (7 minutes)
+4. **Lab 4:** Integrate x402 with API Gateway and the Market Intelligence API (7 minutes)
 5. **Lab 5:** Test With an Agent Client (10 minutes)
 6. **Lab 6:** Verify Idempotency and Payment Receipts (5 minutes)
 7. **Lab 7 (Optional):** Polish Responses With OCI Generative AI (20 minutes)

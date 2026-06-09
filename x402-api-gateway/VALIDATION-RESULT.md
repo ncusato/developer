@@ -1,6 +1,6 @@
 # LiveLabs Workshop Validation – x402-api-gateway
 
-Generated on 2026-06-09T17:06:30.516677+00:00
+Generated on 2026-06-09T17:29:56.772395+00:00
 
 ## Structure Check
 - ✅ Required folders and workshop variants present.
@@ -26,8 +26,8 @@ Generated on 2026-06-09T17:06:30.516677+00:00
 ### 02-enable-ords-autorest\02-enable-ords-autorest.md
 - ✅ LiveLabs formatting checks passed.
 - ✍️ Lanham score: 3/5
-  - 4 sentence(s) exceed 20 words; tighten wording.
-  - Contractions found; expand them per Lanham rules.
+  - 5 sentence(s) exceed 20 words; tighten wording.
+  - Heavy nominalization usage; prefer vivid verbs.
 
 ### 03-deploy-x402-middleware\03-deploy-x402-middleware.md
 - ✅ LiveLabs formatting checks passed.
