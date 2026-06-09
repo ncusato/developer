@@ -18,6 +18,8 @@ Estimated Time: 5 minutes
 
     **Bootstrap script fails on a missing variable:** Open `workshop.env`, fill in the placeholder value, and rerun the same script. The helpers are additive and reuse existing resources by display name where practical.
 
+    **Autonomous Database creation returns `adb-free-count`:** Your tenancy already uses its Always Free Autonomous Database quota. Set `ADB_OCID` in `workshop.env` to reuse an existing Autonomous Database, remove an unused Free Tier database, or set `ADB_ALLOW_PAID_FALLBACK="true"` to create a billable fallback database.
+
     **Gateway returns 502 instead of 402:** Confirm the `x402-middleware` function exists and check the Functions logs in the OCI Console.
 
     **ORDS returns 404:** Confirm `UPSTREAM_BASE` ends in `/ords/sh/` and that the `SALES`, `PRODUCTS`, `CUSTOMERS`, and `CHANNELS` tables are REST-enabled.

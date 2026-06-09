@@ -39,7 +39,26 @@ Estimated Time: 10 minutes
     ```
 
 5. Set your compartment OCID, region, tenancy namespace, passwords, and test wallet address. Keep the defaults for names unless you need to avoid a naming collision. If you use `us-phoenix-1`, set `REGION_KEY` to `phx`; if you use `us-ashburn-1`, set `REGION_KEY` to `iad`.
-6. Validate the file before continuing:
+6. If your tenancy already uses its Always Free Autonomous Database quota, choose one recovery path:
+
+    - Reuse an existing Autonomous Database by setting `ADB_OCID` in `workshop.env`.
+    - Set `ADB_ALLOW_PAID_FALLBACK="true"` in `workshop.env` to create a billable Autonomous Database if the Always Free create fails.
+
+    The paid fallback uses `ADB_PAID_COMPUTE_COUNT`, `ADB_PAID_STORAGE_GBS`, and `ADB_DB_VERSION` from `workshop.env`.
+7. To list existing Autonomous Databases in the compartment, run:
+
+    ```
+    <copy>
+    source workshop.env
+    oci db autonomous-database list \
+      --compartment-id "$COMPARTMENT_OCID" \
+      --all \
+      --query 'data[].{"display-name":"display-name",id:id,"lifecycle-state":"lifecycle-state"}' \
+      --output table
+    </copy>
+    ```
+
+8. Validate the file before continuing:
 
     ```
     <copy>

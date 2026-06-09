@@ -219,12 +219,23 @@ ensure_subnet() {
 
 ensure_autonomous_database() {
   local id
+  local create_output
+  if [[ -n "${ADB_OCID:-}" ]]; then
+    if ! oci db autonomous-database get --autonomous-database-id "$ADB_OCID" >/dev/null; then
+      echo "ADB_OCID is set, but the Autonomous Database could not be read: $ADB_OCID" >&2
+      exit 1
+    fi
+    echo "$ADB_OCID"
+    return
+  fi
+
   id="$(find_by_display_name "oci db autonomous-database list --compartment-id '$COMPARTMENT_OCID' --all" "$ADB_DISPLAY_NAME")"
   if [[ -n "$id" ]]; then
     echo "$id"
     return
   fi
-  oci db autonomous-database create \
+
+  if ! create_output="$(oci db autonomous-database create \
     --compartment-id "$COMPARTMENT_OCID" \
     --display-name "$ADB_DISPLAY_NAME" \
     --db-name "$ADB_DB_NAME" \
@@ -234,7 +245,51 @@ ensure_autonomous_database() {
     --license-model LICENSE_INCLUDED \
     --wait-for-state AVAILABLE \
     --query "data.id" \
-    --raw-output
+    --raw-output 2>&1)"; then
+    echo "$create_output" >&2
+    if grep -q "adb-free-count" <<<"$create_output"; then
+      echo >&2
+      echo "The tenancy has already used its Always Free Autonomous Database quota." >&2
+      echo "Reuse an existing Autonomous Database by setting ADB_OCID in $ENV_FILE, or remove an unused Free Tier ADB and rerun." >&2
+      echo >&2
+      echo "Existing Autonomous Databases in COMPARTMENT_OCID:" >&2
+      oci db autonomous-database list \
+        --compartment-id "$COMPARTMENT_OCID" \
+        --all \
+        --query 'data[].{"display-name":"display-name",id:id,"lifecycle-state":"lifecycle-state"}' \
+        --output table >&2 || true
+
+      if [[ "${ADB_ALLOW_PAID_FALLBACK,,}" == "true" ]]; then
+        echo >&2
+        echo "ADB_ALLOW_PAID_FALLBACK=true. Creating a billable Autonomous Database instead." >&2
+        if ! create_output="$(oci db autonomous-database create \
+          --compartment-id "$COMPARTMENT_OCID" \
+          --display-name "$ADB_DISPLAY_NAME" \
+          --db-name "$ADB_DB_NAME" \
+          --admin-password "$ADB_ADMIN_PASSWORD" \
+          --db-workload OLTP \
+          --compute-model ECPU \
+          --compute-count "${ADB_PAID_COMPUTE_COUNT:-4}" \
+          --data-storage-size-in-gbs "${ADB_PAID_STORAGE_GBS:-20}" \
+          --db-version "${ADB_DB_VERSION:-19c}" \
+          --is-free-tier false \
+          --license-model LICENSE_INCLUDED \
+          --wait-for-state AVAILABLE \
+          --query "data.id" \
+          --raw-output 2>&1)"; then
+          echo "$create_output" >&2
+          exit 1
+        fi
+        echo "$create_output"
+        return
+      fi
+
+      echo >&2
+      echo "To create a billable fallback database automatically, set ADB_ALLOW_PAID_FALLBACK=\"true\" in $ENV_FILE and rerun." >&2
+    fi
+    exit 1
+  fi
+  echo "$create_output"
 }
 
 ensure_api_gateway() {
