@@ -38,7 +38,7 @@ Estimated Time: 10 minutes
     </copy>
     ```
 
-5. Set your compartment OCID, region, tenancy namespace, passwords, and test wallet address. Keep the defaults for names unless you need to avoid a naming collision.
+5. Set your compartment OCID, region, tenancy namespace, passwords, and test wallet address. Keep the defaults for names unless you need to avoid a naming collision. If you use `us-phoenix-1`, set `REGION_KEY` to `phx`; if you use `us-ashburn-1`, set `REGION_KEY` to `iad`.
 6. Validate the file before continuing:
 
     ```

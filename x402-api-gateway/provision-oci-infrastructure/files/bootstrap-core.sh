@@ -44,6 +44,23 @@ require_var ADB_ADMIN_PASSWORD
 
 export OCI_CLI_REGION="$REGION"
 
+expected_region_key() {
+  case "$REGION" in
+    us-phoenix-1) echo "phx" ;;
+    us-ashburn-1) echo "iad" ;;
+    eu-frankfurt-1) echo "fra" ;;
+    uk-london-1) echo "lhr" ;;
+    *) echo "" ;;
+  esac
+}
+
+EXPECTED_REGION_KEY="$(expected_region_key)"
+if [[ -n "$EXPECTED_REGION_KEY" && "${REGION_KEY,,}" != "$EXPECTED_REGION_KEY" ]]; then
+  echo "REGION_KEY does not match REGION in $ENV_FILE." >&2
+  echo "REGION=$REGION expects REGION_KEY=$EXPECTED_REGION_KEY, but found REGION_KEY=$REGION_KEY." >&2
+  exit 1
+fi
+
 json_escape() {
   jq -Rn --arg v "$1" '$v'
 }
@@ -52,6 +69,32 @@ find_by_display_name() {
   local list_command="$1"
   local display_name="$2"
   eval "$list_command" | jq -r --arg name "$display_name" '.data[]? | select(."display-name" == $name) | .id' | head -n 1
+}
+
+get_osn_service_json() {
+  local service_json
+  service_json="$(oci network service list --all | jq -r '.data[] | select(.name | test("All .* Services In Oracle Services Network")) | @base64' | head -n 1)"
+  if [[ -z "$service_json" ]]; then
+    echo "Could not find the Oracle Services Network service entry for region $REGION." >&2
+    exit 1
+  fi
+  echo "$service_json"
+}
+
+decode_service_field() {
+  local service_json="$1"
+  local field="$2"
+  echo "$service_json" | base64 --decode | jq -r "$field"
+}
+
+get_osn_service_id() {
+  decode_service_field "$(get_osn_service_json)" '.id'
+}
+
+get_osn_service_cidr_label() {
+  local service_name
+  service_name="$(decode_service_field "$(get_osn_service_json)" '.name')"
+  echo "$service_name" | tr '[:upper:] ' '[:lower:]-'
 }
 
 ensure_vcn() {
@@ -111,15 +154,13 @@ ensure_nat_gateway() {
 ensure_service_gateway() {
   local vcn_id="$1"
   local name="${WORKSHOP_PREFIX}-service-gateway"
-  local id service_id service_name services_json
+  local id service_id services_json
   id="$(find_by_display_name "oci network service-gateway list --compartment-id '$COMPARTMENT_OCID' --vcn-id '$vcn_id' --all" "$name")"
   if [[ -n "$id" ]]; then
     echo "$id"
     return
   fi
-  service_id="$(oci network service list --all | jq -r '.data[] | select(.name | test("All .* Services In Oracle Services Network")) | .id' | head -n 1)"
-  service_name="$(oci network service list --all | jq -r '.data[] | select(.id == "'"$service_id"'") | .name' | head -n 1)"
-  SERVICE_CIDR_LABEL="$(echo "$service_name" | tr '[:upper:] ' '[:lower:]-')"
+  service_id="$(get_osn_service_id)"
   services_json="$(jq -cn --arg serviceId "$service_id" '[{serviceId: $serviceId}]')"
   oci network service-gateway create \
     --compartment-id "$COMPARTMENT_OCID" \
@@ -238,7 +279,8 @@ NAT_OCID="$(ensure_nat_gateway "$VCN_OCID")"
 SGW_OCID="$(ensure_service_gateway "$VCN_OCID")"
 
 PUBLIC_RULES="$(jq -cn --arg igw "$IGW_OCID" '[{cidrBlock:"0.0.0.0/0", networkEntityId:$igw}]')"
-SERVICE_CIDR_LABEL="${SERVICE_CIDR_LABEL:-all-${REGION_KEY,,}-services-in-oracle-services-network}"
+SERVICE_CIDR_LABEL="$(get_osn_service_cidr_label)"
+echo "Using service CIDR label: $SERVICE_CIDR_LABEL"
 PRIVATE_RULES="$(jq -cn --arg nat "$NAT_OCID" --arg sgw "$SGW_OCID" --arg service "$SERVICE_CIDR_LABEL" '[{cidrBlock:"0.0.0.0/0", networkEntityId:$nat}, {destination:$service, destinationType:"SERVICE_CIDR_BLOCK", networkEntityId:$sgw}]')"
 
 PUBLIC_RT_OCID="$(ensure_route_table "$VCN_OCID" "${WORKSHOP_PREFIX}-public-route-table" "$PUBLIC_RULES")"
