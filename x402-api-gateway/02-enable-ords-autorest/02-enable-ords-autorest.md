@@ -70,6 +70,8 @@ The SQL helper maps ORDS to `/ords/market/` and exposes these endpoints:
 - `/ords/market/segments/`
 - `/ords/market/pricing/`
 
+The helper is safe to rerun. If an earlier attempt enabled `X402_REST` with another ORDS base path, the script disables that mapping before enabling `/ords/market/`.
+
 ## Task 3: Verify the ORDS Endpoint
 
 1. In Database Actions, open **REST**.

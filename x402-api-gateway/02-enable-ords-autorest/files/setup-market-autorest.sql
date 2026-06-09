@@ -185,6 +185,50 @@ WHEN NOT MATCHED THEN INSERT (
 COMMIT;
 
 BEGIN
+  FOR object_row IN (
+    SELECT 'SALES' object_name, 'VIEW' object_type, 'sales' object_alias FROM dual
+    UNION ALL SELECT 'PRODUCTS', 'VIEW', 'products' FROM dual
+    UNION ALL SELECT 'CUSTOMERS', 'VIEW', 'customers' FROM dual
+    UNION ALL SELECT 'CHANNELS', 'VIEW', 'channels' FROM dual
+    UNION ALL SELECT 'MARKET_SIGNALS', 'TABLE', 'signals' FROM dual
+    UNION ALL SELECT 'API_PRODUCTS', 'TABLE', 'products' FROM dual
+    UNION ALL SELECT 'BUYER_SEGMENTS', 'TABLE', 'segments' FROM dual
+    UNION ALL SELECT 'PRICING_BENCHMARKS', 'TABLE', 'pricing' FROM dual
+  ) LOOP
+    BEGIN
+      ORDS.ENABLE_OBJECT(
+        p_enabled        => FALSE,
+        p_schema         => 'X402_REST',
+        p_object         => object_row.object_name,
+        p_object_type    => object_row.object_type,
+        p_object_alias   => object_row.object_alias,
+        p_auto_rest_auth => FALSE
+      );
+    EXCEPTION
+      WHEN OTHERS THEN NULL;
+    END;
+  END LOOP;
+  COMMIT;
+END;
+/
+
+BEGIN
+  BEGIN
+    ORDS_ADMIN.ENABLE_SCHEMA(
+      p_enabled => FALSE,
+      p_schema  => 'X402_REST'
+    );
+    COMMIT;
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE != -20012 THEN
+        RAISE;
+      END IF;
+  END;
+END;
+/
+
+BEGIN
   FOR old_object IN (
     SELECT column_value AS name
     FROM TABLE(sys.odcivarchar2list('SALES', 'PRODUCTS', 'CUSTOMERS', 'CHANNELS'))
@@ -231,6 +275,30 @@ BEGIN
     p_url_mapping_pattern => 'market',
     p_auto_rest_auth      => FALSE
   );
+  COMMIT;
+END;
+/
+
+BEGIN
+  FOR object_row IN (
+    SELECT 'MARKET_SIGNALS' object_name, 'signals' object_alias FROM dual
+    UNION ALL SELECT 'API_PRODUCTS', 'products' FROM dual
+    UNION ALL SELECT 'BUYER_SEGMENTS', 'segments' FROM dual
+    UNION ALL SELECT 'PRICING_BENCHMARKS', 'pricing' FROM dual
+  ) LOOP
+    BEGIN
+      ORDS.ENABLE_OBJECT(
+        p_enabled        => FALSE,
+        p_schema         => 'X402_REST',
+        p_object         => object_row.object_name,
+        p_object_type    => 'TABLE',
+        p_object_alias   => object_row.object_alias,
+        p_auto_rest_auth => FALSE
+      );
+    EXCEPTION
+      WHEN OTHERS THEN NULL;
+    END;
+  END LOOP;
   COMMIT;
 END;
 /
