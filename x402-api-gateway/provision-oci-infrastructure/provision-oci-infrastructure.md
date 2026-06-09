@@ -39,6 +39,15 @@ Estimated Time: 10 minutes
     ```
 
 5. Set your compartment OCID, region, tenancy namespace, passwords, and test wallet address. Keep the defaults for names unless you need to avoid a naming collision.
+6. Validate the file before continuing:
+
+    ```
+    <copy>
+    bash -n workshop.env
+    </copy>
+    ```
+
+    If this command reports an unexpected end of file, one of the `export` lines is missing a closing double quote.
 
 ## Task 2: Run the Core Bootstrap Script
 

@@ -7,6 +7,15 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
+if ! bash -n "$ENV_FILE"; then
+  echo >&2
+  echo "$ENV_FILE has a shell syntax error." >&2
+  echo "Check for an export line with a missing closing quote, then rerun this script." >&2
+  echo >&2
+  nl -ba "$ENV_FILE" >&2
+  exit 1
+fi
+
 # shellcheck disable=SC1090
 source "$ENV_FILE"
 
