@@ -1,6 +1,6 @@
 # LiveLabs Workshop Validation – x402-api-gateway
 
-Generated on 2026-06-09T18:12:22.214704+00:00
+Generated on 2026-06-09T18:35:45.104052+00:00
 
 ## Structure Check
 - ✅ Required folders and workshop variants present.
@@ -27,7 +27,7 @@ Generated on 2026-06-09T18:12:22.214704+00:00
 - ✅ LiveLabs formatting checks passed.
 - ✍️ Lanham score: 2/5
   - 5 sentence(s) exceed 20 words; tighten wording.
-  - Passive voice detected in 2 instance(s).
+  - Passive voice detected in 3 instance(s).
   - Heavy nominalization usage; prefer vivid verbs.
 
 ### 03-deploy-x402-middleware\03-deploy-x402-middleware.md

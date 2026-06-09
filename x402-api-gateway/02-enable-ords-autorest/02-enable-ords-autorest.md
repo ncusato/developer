@@ -88,7 +88,21 @@ The helper is safe to rerun. If an earlier attempt enabled `X402_REST` with anot
     </copy>
     ```
 
-3. Test the `signals` endpoint:
+3. Download and run the ORDS verifier:
+
+    ```
+    <copy>
+    curl -fsSLO "$WORKSHOP_FILES_BASE/02-enable-ords-autorest/files/verify-market-ords.sh"
+    chmod +x verify-market-ords.sh
+    ./verify-market-ords.sh
+    </copy>
+    ```
+
+4. Confirm the verifier prints `Canonical market endpoint is ready`.
+
+    If the verifier prints `HTTP status: 404`, the market tables were created but ORDS did not publish the canonical `/ords/market/signals/` path. Re-download `setup-market-autorest.sql`, replace the password placeholder again, run it as `ADMIN`, and then rerun the verifier. This usually means an older SQL helper was run or a previous ORDS mapping stayed enabled.
+
+5. Test the `signals` endpoint directly:
 
     ```
     <copy>
@@ -96,21 +110,18 @@ The helper is safe to rerun. If an earlier attempt enabled `X402_REST` with anot
     </copy>
     ```
 
-4. Confirm the response includes an `items` array with market signal records.
+6. Confirm the response includes an `items` array with market signal records.
 
-5. Save the ORDS base URLs in `workshop.env`:
+7. Save the ORDS base URLs in `workshop.env`:
 
     ```
     <copy>
-    cat >> workshop.env <<EOF
-    export UPSTREAM_BASE="$ADB_ORDS_HOST/ords/market/"
-    export ORDS_RECEIPTS_URL="$ADB_ORDS_HOST/ords/x402/"
-    EOF
+    cat ords-market.env >> workshop.env
     source workshop.env
     </copy>
     ```
 
-6. Confirm the saved values:
+8. Confirm the saved values:
 
     ```
     <copy>
