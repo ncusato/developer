@@ -1,5 +1,34 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+
+CURRENT_STEP="startup"
+
+log() {
+  printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" >&2
+}
+
+fail_report() {
+  local status="$1"
+  echo >&2
+  echo "Bootstrap failed during: $CURRENT_STEP" >&2
+  echo "Command: $BASH_COMMAND" >&2
+  echo "Exit code: $status" >&2
+  echo >&2
+  echo "The script is additive. Fix the reported issue, then rerun it to reuse completed resources." >&2
+  exit "$status"
+}
+
+trap 'fail_report $?' ERR
+
+ready() {
+  local label="$1"
+  local value="$2"
+  if [[ -z "$value" || "$value" == "null" ]]; then
+    echo "No identifier was returned for $label." >&2
+    return 1
+  fi
+  log "DONE: $label ready: $value"
+}
 
 ENV_FILE="${1:-workshop.env}"
 if [[ ! -f "$ENV_FILE" ]]; then
@@ -337,27 +366,78 @@ ensure_functions_app() {
     --raw-output
 }
 
-echo "Creating or finding core OCI resources..."
+log "Creating or finding core OCI resources..."
+CURRENT_STEP="VCN $VCN_NAME"
+log "START: checking VCN $VCN_NAME"
 VCN_OCID="$(ensure_vcn)"
-IGW_OCID="$(ensure_internet_gateway "$VCN_OCID")"
-NAT_OCID="$(ensure_nat_gateway "$VCN_OCID")"
-SGW_OCID="$(ensure_service_gateway "$VCN_OCID")"
+ready "VCN" "$VCN_OCID"
 
+CURRENT_STEP="Internet Gateway ${WORKSHOP_PREFIX}-internet-gateway"
+log "START: checking Internet Gateway ${WORKSHOP_PREFIX}-internet-gateway"
+IGW_OCID="$(ensure_internet_gateway "$VCN_OCID")"
+ready "Internet Gateway" "$IGW_OCID"
+
+CURRENT_STEP="NAT Gateway ${WORKSHOP_PREFIX}-nat-gateway"
+log "START: checking NAT Gateway ${WORKSHOP_PREFIX}-nat-gateway"
+NAT_OCID="$(ensure_nat_gateway "$VCN_OCID")"
+ready "NAT Gateway" "$NAT_OCID"
+
+CURRENT_STEP="Service Gateway ${WORKSHOP_PREFIX}-service-gateway"
+log "START: checking Service Gateway ${WORKSHOP_PREFIX}-service-gateway"
+SGW_OCID="$(ensure_service_gateway "$VCN_OCID")"
+ready "Service Gateway" "$SGW_OCID"
+
+CURRENT_STEP="route rule JSON"
 PUBLIC_RULES="$(jq -cn --arg igw "$IGW_OCID" '[{cidrBlock:"0.0.0.0/0", networkEntityId:$igw}]')"
 SERVICE_CIDR_LABEL="$(get_osn_service_cidr_label)"
-echo "Using service CIDR label: $SERVICE_CIDR_LABEL"
+log "Using service CIDR label: $SERVICE_CIDR_LABEL"
 PRIVATE_RULES="$(jq -cn --arg nat "$NAT_OCID" --arg sgw "$SGW_OCID" --arg service "$SERVICE_CIDR_LABEL" '[{cidrBlock:"0.0.0.0/0", networkEntityId:$nat}, {destination:$service, destinationType:"SERVICE_CIDR_BLOCK", networkEntityId:$sgw}]')"
 
+CURRENT_STEP="public route table ${WORKSHOP_PREFIX}-public-route-table"
+log "START: checking public route table ${WORKSHOP_PREFIX}-public-route-table"
 PUBLIC_RT_OCID="$(ensure_route_table "$VCN_OCID" "${WORKSHOP_PREFIX}-public-route-table" "$PUBLIC_RULES")"
+ready "Public route table" "$PUBLIC_RT_OCID"
+
+CURRENT_STEP="private route table ${WORKSHOP_PREFIX}-private-route-table"
+log "START: checking private route table ${WORKSHOP_PREFIX}-private-route-table"
 PRIVATE_RT_OCID="$(ensure_route_table "$VCN_OCID" "${WORKSHOP_PREFIX}-private-route-table" "$PRIVATE_RULES")"
+ready "Private route table" "$PRIVATE_RT_OCID"
+
+CURRENT_STEP="public subnet $PUBLIC_SUBNET_NAME"
+log "START: checking public subnet $PUBLIC_SUBNET_NAME"
 PUBLIC_SUBNET_OCID="$(ensure_subnet "$VCN_OCID" "$PUBLIC_SUBNET_NAME" "10.0.1.0/24" "${WORKSHOP_PREFIX}pub" "$PUBLIC_RT_OCID" false)"
+ready "Public subnet" "$PUBLIC_SUBNET_OCID"
+
+CURRENT_STEP="private subnet $PRIVATE_SUBNET_NAME"
+log "START: checking private subnet $PRIVATE_SUBNET_NAME"
 PRIVATE_SUBNET_OCID="$(ensure_subnet "$VCN_OCID" "$PRIVATE_SUBNET_NAME" "10.0.2.0/24" "${WORKSHOP_PREFIX}priv" "$PRIVATE_RT_OCID" true)"
+ready "Private subnet" "$PRIVATE_SUBNET_OCID"
+
+CURRENT_STEP="Autonomous Database $ADB_DISPLAY_NAME"
+log "START: checking Autonomous Database $ADB_DISPLAY_NAME"
 ADB_OCID="$(ensure_autonomous_database)"
+ready "Autonomous Database" "$ADB_OCID"
+
+CURRENT_STEP="API Gateway $API_GATEWAY_NAME"
+log "START: checking API Gateway $API_GATEWAY_NAME"
 API_GATEWAY_OCID="$(ensure_api_gateway "$PUBLIC_SUBNET_OCID")"
+ready "API Gateway" "$API_GATEWAY_OCID"
+
+CURRENT_STEP="Functions application $FUNCTIONS_APP_NAME"
+log "START: checking Functions application $FUNCTIONS_APP_NAME"
 FUNCTIONS_APP_OCID="$(ensure_functions_app "$PRIVATE_SUBNET_OCID")"
+ready "Functions application" "$FUNCTIONS_APP_OCID"
 
+CURRENT_STEP="API Gateway hostname lookup"
+log "START: reading API Gateway endpoint"
 API_GATEWAY_ENDPOINT="$(oci api-gateway gateway get --gateway-id "$API_GATEWAY_OCID" --query 'data.hostname' --raw-output)"
+if [[ -z "$API_GATEWAY_ENDPOINT" || "$API_GATEWAY_ENDPOINT" == "null" ]]; then
+  echo "API Gateway did not return a hostname." >&2
+  exit 1
+fi
+log "DONE: API Gateway endpoint ready: https://$API_GATEWAY_ENDPOINT"
 
+CURRENT_STEP="writing workshop-outputs.env"
 cat > workshop-outputs.env <<EOF
 export COMPARTMENT_OCID="$COMPARTMENT_OCID"
 export REGION="$REGION"
@@ -376,6 +456,12 @@ EOF
 
 echo
 echo "Core resources are ready. Saved outputs to workshop-outputs.env."
+echo "VCN: $VCN_OCID"
+echo "Public subnet: $PUBLIC_SUBNET_OCID"
+echo "Private subnet: $PRIVATE_SUBNET_OCID"
+echo "Autonomous Database: $ADB_OCID"
+echo "API Gateway: $API_GATEWAY_OCID"
+echo "Functions application: $FUNCTIONS_APP_OCID"
 echo "Gateway endpoint: https://$API_GATEWAY_ENDPOINT"
 echo
 echo "Next: source workshop-outputs.env, then continue to Lab 2."

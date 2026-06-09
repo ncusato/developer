@@ -80,6 +80,8 @@ Estimated Time: 10 minutes
     </copy>
     ```
 
+    The script prints `START` and `DONE` lines for each resource. If a command fails, rerun the script after fixing the reported issue; it reuses completed resources by display name.
+
 2. When the script finishes, load the generated outputs:
 
     ```
