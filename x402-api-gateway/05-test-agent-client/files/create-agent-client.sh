@@ -25,8 +25,8 @@ if ! command -v curl >/dev/null 2>&1; then
 fi
 
 mkdir -p "$CLIENT_DIR"
-curl -fsSL "$FILES_BASE/test-agent-client/files/client.js" -o "$CLIENT_DIR/client.js"
-curl -fsSL "$FILES_BASE/test-agent-client/files/package.json" -o "$CLIENT_DIR/package.json"
+curl -fsSL "$FILES_BASE/05-test-agent-client/files/client.js" -o "$CLIENT_DIR/client.js"
+curl -fsSL "$FILES_BASE/05-test-agent-client/files/package.json" -o "$CLIENT_DIR/package.json"
 
 cd "$CLIENT_DIR"
 npm install

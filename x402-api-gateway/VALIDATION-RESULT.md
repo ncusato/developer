@@ -1,79 +1,78 @@
 # LiveLabs Workshop Validation – x402-api-gateway
 
-Generated on 2026-06-07T06:53:35.732371+00:00
+Generated on 2026-06-09T16:41:21.435278+00:00
 
 ## Structure Check
 - ✅ Required folders and workshop variants present.
 
 ## Manifest Review
-### workshops\desktop\manifest.json
-- ✅ Manifest structure looks good.
-
-### workshops\sandbox\manifest.json
-- ✅ Manifest structure looks good.
-
 ### workshops\tenancy\manifest.json
 - ✅ Manifest structure looks good.
 
 ## Markdown File Ratings
-### deploy-x402-middleware\deploy-x402-middleware.md
+### 00-introduction\00-introduction.md
 - ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
+- ✍️ Lanham score: 2/5
   - 11 sentence(s) exceed 20 words; tighten wording.
+  - Contractions found; expand them per Lanham rules.
   - Heavy nominalization usage; prefer vivid verbs.
 
-### enable-ords-autorest\enable-ords-autorest.md
-- ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
-  - 12 sentence(s) exceed 20 words; tighten wording.
-  - Heavy nominalization usage; prefer vivid verbs.
-
-### idempotency-receipts\idempotency-receipts.md
-- ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
-  - 7 sentence(s) exceed 20 words; tighten wording.
-  - Heavy nominalization usage; prefer vivid verbs.
-
-### integrate-api-gateway\integrate-api-gateway.md
-- ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
-  - 5 sentence(s) exceed 20 words; tighten wording.
-  - Heavy nominalization usage; prefer vivid verbs.
-
-### introduction\introduction.md
-- ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
-  - 6 sentence(s) exceed 20 words; tighten wording.
-  - Heavy nominalization usage; prefer vivid verbs.
-
-### oci-genai-responses\oci-genai-responses.md
-- ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
-  - 13 sentence(s) exceed 20 words; tighten wording.
-  - Heavy nominalization usage; prefer vivid verbs.
-
-### provision-oci-infrastructure\provision-oci-infrastructure.md
-- ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
-  - 6 sentence(s) exceed 20 words; tighten wording.
-  - Heavy nominalization usage; prefer vivid verbs.
-
-### test-agent-client\test-agent-client.md
-- ✅ LiveLabs formatting checks passed.
-- ✍️ Lanham score: 3/5
-  - 5 sentence(s) exceed 20 words; tighten wording.
-  - Heavy nominalization usage; prefer vivid verbs.
-
-### TRACEABILITY.md
+### 01-provision-oci-infrastructure\01-provision-oci-infrastructure.md
 - ✅ LiveLabs formatting checks passed.
 - ✍️ Lanham score: 3/5
   - 10 sentence(s) exceed 20 words; tighten wording.
   - Heavy nominalization usage; prefer vivid verbs.
 
-### troubleshooting-next-steps\troubleshooting-next-steps.md
+### 02-enable-ords-autorest\02-enable-ords-autorest.md
 - ✅ LiveLabs formatting checks passed.
 - ✍️ Lanham score: 3/5
-  - 2 sentence(s) exceed 20 words; tighten wording.
+  - 5 sentence(s) exceed 20 words; tighten wording.
+  - Contractions found; expand them per Lanham rules.
+
+### 03-deploy-x402-middleware\03-deploy-x402-middleware.md
+- ✅ LiveLabs formatting checks passed.
+- ✍️ Lanham score: 3/5
+  - 6 sentence(s) exceed 20 words; tighten wording.
+  - Heavy nominalization usage; prefer vivid verbs.
+
+### 04-integrate-api-gateway\04-integrate-api-gateway.md
+- ✅ LiveLabs formatting checks passed.
+- ✍️ Lanham score: 3/5
+  - 4 sentence(s) exceed 20 words; tighten wording.
+  - Heavy nominalization usage; prefer vivid verbs.
+
+### 05-test-agent-client\05-test-agent-client.md
+- ✅ LiveLabs formatting checks passed.
+- ✍️ Lanham score: 3/5
+  - 3 sentence(s) exceed 20 words; tighten wording.
+  - Heavy nominalization usage; prefer vivid verbs.
+
+### 06-idempotency-receipts\06-idempotency-receipts.md
+- ✅ LiveLabs formatting checks passed.
+- ✍️ Lanham score: 2/5
+  - 5 sentence(s) exceed 20 words; tighten wording.
+  - Contractions found; expand them per Lanham rules.
+  - Heavy nominalization usage; prefer vivid verbs.
+
+### 07-oci-genai-responses\07-oci-genai-responses.md
+- ✅ LiveLabs formatting checks passed.
+- ✍️ Lanham score: 2/5
+  - 14 sentence(s) exceed 20 words; tighten wording.
+  - Contractions found; expand them per Lanham rules.
+  - Heavy nominalization usage; prefer vivid verbs.
+
+### 08-troubleshooting-next-steps\08-troubleshooting-next-steps.md
+- ✅ LiveLabs formatting checks passed.
+- ✍️ Lanham score: 2/5
+  - 5 sentence(s) exceed 20 words; tighten wording.
+  - Contractions found; expand them per Lanham rules.
+  - Heavy nominalization usage; prefer vivid verbs.
+
+### TRACEABILITY.md
+- ✅ LiveLabs formatting checks passed.
+- ✍️ Lanham score: 2/5
+  - 13 sentence(s) exceed 20 words; tighten wording.
+  - Contractions found; expand them per Lanham rules.
   - Heavy nominalization usage; prefer vivid verbs.
 
 ### WORKSHOP-DETAILS.md

@@ -20,7 +20,7 @@ By the end of this workshop, you will have:
 
 This pattern - database table -> REST endpoint -> monetized x402 API -> AI-polished response - is the fastest path from "I have data" to "agents pay me for answers."
 
-**Estimated Workshop Time:** 60 minutes (80 with optional Gen AI lab)
+Estimated Time: 60 minutes (80 with optional Gen AI lab)
 
 ### Objectives
 

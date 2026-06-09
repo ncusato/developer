@@ -41,7 +41,7 @@ Estimated Time: 10 minutes
 
     ```
     <copy>
-    curl -fsSLO "$WORKSHOP_FILES_BASE/test-agent-client/files/create-agent-client.sh"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/05-test-agent-client/files/create-agent-client.sh"
     chmod +x create-agent-client.sh
     ./create-agent-client.sh
     </copy>

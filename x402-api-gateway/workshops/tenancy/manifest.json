@@ -6,7 +6,7 @@
             "title": "Introduction",
             "description": "Workshop overview, architecture, objectives, prerequisites, and lab sequence.",
             "type": "livelabs",
-            "filename": "../../introduction/introduction.md"
+            "filename": "../../00-introduction/00-introduction.md"
         },
         {
             "title": "Get Started",
@@ -17,49 +17,49 @@
             "title": "Lab 1: Provision OCI Infrastructure",
             "description": "Use Cloud Shell automation to create the Autonomous Database, API Gateway, Functions application, and network foundation.",
             "type": "livelabs",
-            "filename": "../../provision-oci-infrastructure/provision-oci-infrastructure.md"
+            "filename": "../../01-provision-oci-infrastructure/01-provision-oci-infrastructure.md"
         },
         {
             "title": "Lab 2: Enable ORDS AutoREST on the SH Schema",
             "description": "Use a SQL helper to expose selected SH sample-schema tables through ORDS AutoREST and verify the generated REST API.",
             "type": "livelabs",
-            "filename": "../../enable-ords-autorest/enable-ords-autorest.md"
+            "filename": "../../02-enable-ords-autorest/02-enable-ords-autorest.md"
         },
         {
             "title": "Lab 3: Deploy x402 Middleware as an OCI Function",
             "description": "Create the x402 receipts store and deploy the provided Node.js payment middleware as an OCI Function.",
             "type": "livelabs",
-            "filename": "../../deploy-x402-middleware/deploy-x402-middleware.md"
+            "filename": "../../03-deploy-x402-middleware/03-deploy-x402-middleware.md"
         },
         {
             "title": "Lab 4: Integrate x402 with API Gateway and the SH REST API",
             "description": "Use a route helper to wire API Gateway routes to the x402 middleware function.",
             "type": "livelabs",
-            "filename": "../../integrate-api-gateway/integrate-api-gateway.md"
+            "filename": "../../04-integrate-api-gateway/04-integrate-api-gateway.md"
         },
         {
             "title": "Lab 5: Test With an Agent Client",
             "description": "Generate and run a Node.js agent-style client that pays for one SH sales query.",
             "type": "livelabs",
-            "filename": "../../test-agent-client/test-agent-client.md"
+            "filename": "../../05-test-agent-client/05-test-agent-client.md"
         },
         {
             "title": "Lab 6: Verify Idempotency and Payment Receipts",
             "description": "Replay a saved payment signature and inspect payment receipts in Autonomous Database.",
             "type": "livelabs",
-            "filename": "../../idempotency-receipts/idempotency-receipts.md"
+            "filename": "../../06-idempotency-receipts/06-idempotency-receipts.md"
         },
         {
             "title": "Lab 7 (Optional): Polish Responses With OCI Generative AI",
             "description": "Optionally enrich paid data responses with OCI Generative AI summaries.",
             "type": "livelabs",
-            "filename": "../../oci-genai-responses/oci-genai-responses.md"
+            "filename": "../../07-oci-genai-responses/07-oci-genai-responses.md"
         },
         {
             "title": "Lab 8: Troubleshooting and Next Steps",
             "description": "Review common fixes and next steps for taking the pattern further.",
             "type": "livelabs",
-            "filename": "../../troubleshooting-next-steps/troubleshooting-next-steps.md"
+            "filename": "../../08-troubleshooting-next-steps/08-troubleshooting-next-steps.md"
         },
         {
             "title": "Need Help?",

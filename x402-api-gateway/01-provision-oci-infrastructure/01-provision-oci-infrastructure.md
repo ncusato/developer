@@ -25,7 +25,7 @@ Estimated Time: 10 minutes
     cd x402-workshop
 
     export WORKSHOP_FILES_BASE="https://raw.githubusercontent.com/oracle-livelabs/developer/main/x402-api-gateway"
-    curl -fsSLO "$WORKSHOP_FILES_BASE/provision-oci-infrastructure/files/workshop.env.example"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/01-provision-oci-infrastructure/files/workshop.env.example"
     cp workshop.env.example workshop.env
     </copy>
     ```
@@ -74,7 +74,7 @@ Estimated Time: 10 minutes
 
     ```
     <copy>
-    curl -fsSLO "$WORKSHOP_FILES_BASE/provision-oci-infrastructure/files/bootstrap-core.sh"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/01-provision-oci-infrastructure/files/bootstrap-core.sh"
     chmod +x bootstrap-core.sh
     ./bootstrap-core.sh
     </copy>

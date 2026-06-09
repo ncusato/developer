@@ -29,7 +29,7 @@ Estimated Time: 8 minutes
 
     ```
     <copy>
-    curl -fsSLO "$WORKSHOP_FILES_BASE/enable-ords-autorest/files/setup-sh-autorest.sql"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/02-enable-ords-autorest/files/setup-sh-autorest.sql"
     </copy>
     ```
 

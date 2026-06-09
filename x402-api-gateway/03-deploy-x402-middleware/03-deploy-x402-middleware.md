@@ -22,7 +22,7 @@ Estimated Time: 15 minutes
     cd ~/x402-workshop
     source workshop.env
     source workshop-outputs.env
-    curl -fsSLO "$WORKSHOP_FILES_BASE/deploy-x402-middleware/files/setup-receipts.sql"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/03-deploy-x402-middleware/files/setup-receipts.sql"
     </copy>
     ```
 
@@ -73,7 +73,7 @@ The receipt table stores the payer address, payment amount, network, asset, tran
 
     ```
     <copy>
-    curl -fsSLO "$WORKSHOP_FILES_BASE/deploy-x402-middleware/files/create-middleware-project.sh"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/03-deploy-x402-middleware/files/create-middleware-project.sh"
     chmod +x create-middleware-project.sh
     ./create-middleware-project.sh
     </copy>

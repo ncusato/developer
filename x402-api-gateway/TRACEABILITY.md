@@ -12,15 +12,15 @@ Estimated Time: Reference metadata
 
 | Source section | Generated file |
 | --- | --- |
-| About this Workshop, Objectives, Prerequisites, Architecture, Labs | `introduction/introduction.md` |
-| Lab 1: Provision OCI Infrastructure | `provision-oci-infrastructure/provision-oci-infrastructure.md` |
-| Lab 2: Enable ORDS AutoREST on the SH Schema | `enable-ords-autorest/enable-ords-autorest.md` |
-| Lab 3: Deploy x402 Middleware as an OCI Function | `deploy-x402-middleware/deploy-x402-middleware.md` |
-| Lab 4: Integrate x402 with API Gateway and the SH REST API | `integrate-api-gateway/integrate-api-gateway.md` |
-| Lab 5: Test With an Agent Client | `test-agent-client/test-agent-client.md` |
-| Lab 6: Verify Idempotency and Payment Receipts | `idempotency-receipts/idempotency-receipts.md` |
-| Lab 7: Polish Responses With OCI Generative AI | `oci-genai-responses/oci-genai-responses.md` |
-| Lab 8: Troubleshooting and Next Steps | `troubleshooting-next-steps/troubleshooting-next-steps.md` |
+| About this Workshop, Objectives, Prerequisites, Architecture, Labs | `00-introduction/00-introduction.md` |
+| Lab 1: Provision OCI Infrastructure | `01-provision-oci-infrastructure/01-provision-oci-infrastructure.md` |
+| Lab 2: Enable ORDS AutoREST on the SH Schema | `02-enable-ords-autorest/02-enable-ords-autorest.md` |
+| Lab 3: Deploy x402 Middleware as an OCI Function | `03-deploy-x402-middleware/03-deploy-x402-middleware.md` |
+| Lab 4: Integrate x402 with API Gateway and the SH REST API | `04-integrate-api-gateway/04-integrate-api-gateway.md` |
+| Lab 5: Test With an Agent Client | `05-test-agent-client/05-test-agent-client.md` |
+| Lab 6: Verify Idempotency and Payment Receipts | `06-idempotency-receipts/06-idempotency-receipts.md` |
+| Lab 7: Polish Responses With OCI Generative AI | `07-oci-genai-responses/07-oci-genai-responses.md` |
+| Lab 8: Troubleshooting and Next Steps | `08-troubleshooting-next-steps/08-troubleshooting-next-steps.md` |
 
 ## Publish Review Status
 

@@ -41,9 +41,9 @@ require_var TENANCY_NAMESPACE
 require_var COMPARTMENT_OCID
 
 mkdir -p "$PROJECT_DIR"
-curl -fsSL "$FILES_BASE/deploy-x402-middleware/files/func.js" -o "$PROJECT_DIR/func.js"
-curl -fsSL "$FILES_BASE/deploy-x402-middleware/files/package.json" -o "$PROJECT_DIR/package.json"
-curl -fsSL "$FILES_BASE/deploy-x402-middleware/files/func.yaml" -o "$PROJECT_DIR/func.yaml"
+curl -fsSL "$FILES_BASE/03-deploy-x402-middleware/files/func.js" -o "$PROJECT_DIR/func.js"
+curl -fsSL "$FILES_BASE/03-deploy-x402-middleware/files/package.json" -o "$PROJECT_DIR/package.json"
+curl -fsSL "$FILES_BASE/03-deploy-x402-middleware/files/func.yaml" -o "$PROJECT_DIR/func.yaml"
 
 fn use context default
 fn update context oracle.compartment-id "$COMPARTMENT_OCID"

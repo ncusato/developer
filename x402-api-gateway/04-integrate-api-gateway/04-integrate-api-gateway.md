@@ -29,7 +29,7 @@ Estimated Time: 7 minutes
 
     ```
     <copy>
-    curl -fsSLO "$WORKSHOP_FILES_BASE/integrate-api-gateway/files/configure-gateway-routes.sh"
+    curl -fsSLO "$WORKSHOP_FILES_BASE/04-integrate-api-gateway/files/configure-gateway-routes.sh"
     chmod +x configure-gateway-routes.sh
     ./configure-gateway-routes.sh
     </copy>
