@@ -68,7 +68,17 @@ json_escape() {
 find_by_display_name() {
   local list_command="$1"
   local display_name="$2"
-  eval "$list_command" | jq -r --arg name "$display_name" '.data[]? | select(."display-name" == $name) | .id' | head -n 1
+  eval "$list_command" | jq -r --arg name "$display_name" '
+    (
+      if (.data | type) == "array" then .data
+      elif (.data.items | type) == "array" then .data.items
+      else []
+      end
+    )
+    | .[]
+    | select(."display-name" == $name or .displayName == $name or .name == $name)
+    | .id
+  ' | head -n 1
 }
 
 get_osn_service_json() {
