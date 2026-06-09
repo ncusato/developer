@@ -22,7 +22,7 @@ Estimated Time: 5 minutes
 
     **Gateway returns 502 instead of 402:** Confirm the `x402-middleware` function exists and check the Functions logs in the OCI Console.
 
-    **ORDS returns 404:** Confirm `UPSTREAM_BASE` ends in `/ords/sh/` and that the `SALES`, `PRODUCTS`, `CUSTOMERS`, and `CHANNELS` tables are REST-enabled.
+**ORDS returns 404:** Confirm `UPSTREAM_BASE` ends in `/ords/sh/` and that the `X402_REST` views `SALES`, `PRODUCTS`, `CUSTOMERS`, and `CHANNELS` are REST-enabled.
 
     **Facilitator verification fails:** Confirm the wallet has Base Sepolia test USDC, the `NETWORK` value is `eip155:84532`, and the `ASSET_ADDRESS` value matches the Base Sepolia USDC contract.
 

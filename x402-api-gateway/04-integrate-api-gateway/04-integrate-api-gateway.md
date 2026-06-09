@@ -1,4 +1,4 @@
-# Lab 4: Integrate x402 with API Gateway and the SH REST API
+# Lab 4: Integrate x402 with API Gateway and the SH Data REST API
 
 ## Introduction
 
@@ -7,7 +7,7 @@ You will connect the public API Gateway to the x402 middleware function. The dep
 ### Objectives
 
 - Create or update the API Gateway deployment.
-- Add routes for the SH AutoREST resources.
+- Add routes for the SH data AutoREST resources.
 - Forward requests to the x402 middleware function.
 - Confirm an unpaid request returns HTTP 402.
 

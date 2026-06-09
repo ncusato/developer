@@ -1,14 +1,14 @@
-# Lab 2: Enable ORDS AutoREST on the SH Schema
+# Lab 2: Expose SH Data with ORDS AutoREST
 
 ## Introduction
 
-ORDS AutoREST exposes database tables and views as REST endpoints without writing controllers. You will use a SQL helper to unlock the SH sample schema, enable ORDS for the schema, and REST-enable the high-value tables used by the paid API.
+ORDS AutoREST exposes database tables and views as REST endpoints without writing controllers. Autonomous Database protects maintained schemas such as `SH`, so this lab does not REST-enable `SH` directly. Instead, you will create a workshop-owned schema named `X402_REST`, grant it read access to selected SH sample tables, create views, and map ORDS to the familiar `/ords/sh/` base path.
 
 ### Objectives
 
-- Unlock the SH sample schema in Autonomous Database.
-- Enable ORDS access for the SH schema.
-- AutoREST-enable the sales, products, customers, and channels tables.
+- Create the `X402_REST` schema for workshop REST access.
+- Expose SH sample data through `X402_REST` views.
+- AutoREST-enable the sales, products, customers, and channels views.
 - Verify the generated ORDS endpoint and save its base URL.
 
 Estimated Time: 8 minutes
@@ -33,7 +33,7 @@ Estimated Time: 8 minutes
     </copy>
     ```
 
-3. Open the file and replace `ReplaceWithStrongShPassword#2026` with the `SH_PASSWORD` value from `workshop.env`:
+3. Open the file and replace `ReplaceWithStrongRestPassword#2026` with a strong password. Use `REST_SCHEMA_PASSWORD` if you added it to `workshop.env`; otherwise use the current `SH_PASSWORD` value.
 
     ```
     <copy>
@@ -46,14 +46,18 @@ Estimated Time: 8 minutes
 1. In the OCI Console, open your `x402-monetized-db` Autonomous Database.
 2. Click **Database actions** > **SQL** and sign in as `ADMIN`.
 3. Paste and run the contents of `setup-sh-autorest.sql`.
-4. Confirm the final query returns `SH` with `OPEN` account status.
+4. Confirm the final queries return:
 
-The SQL helper enables ORDS for the SH schema and AutoREST-enables `SALES`, `PRODUCTS`, `CUSTOMERS`, and `CHANNELS`.
+    - `X402_REST` with `OPEN` account status.
+    - Four views owned by `X402_REST`: `SALES`, `PRODUCTS`, `CUSTOMERS`, and `CHANNELS`.
+
+The SQL helper leaves `SH` locked. It uses `SH` only as the source for read-only views, then REST-enables those views under the ORDS base path `/ords/sh/`.
 
 ## Task 3: Verify the ORDS Endpoint
 
 1. In Database Actions, open **REST**.
-2. Select the `SALES` table and copy its generated endpoint. It should look like:
+2. Select the `X402_REST` schema, then select the `SALES` view.
+3. Copy its generated endpoint. It should look like:
 
     ```
     <copy>
@@ -61,7 +65,7 @@ The SQL helper enables ORDS for the SH schema and AutoREST-enables `SALES`, `PRO
     </copy>
     ```
 
-3. Test the endpoint from Cloud Shell:
+4. Test the endpoint from Cloud Shell:
 
     ```
     <copy>
@@ -69,7 +73,7 @@ The SQL helper enables ORDS for the SH schema and AutoREST-enables `SALES`, `PRO
     </copy>
     ```
 
-4. Save the ORDS base URLs in `workshop.env`:
+5. Save the ORDS base URLs in `workshop.env`:
 
     ```
     <copy>
@@ -81,7 +85,7 @@ The SQL helper enables ORDS for the SH schema and AutoREST-enables `SALES`, `PRO
     </copy>
     ```
 
-5. Replace `YOUR-ADB-HOST` and `YOUR-REGION` with your real Autonomous Database host values before continuing.
+6. Replace `YOUR-ADB-HOST` and `YOUR-REGION` with your real Autonomous Database host values before continuing.
 
 ## Learn more
 

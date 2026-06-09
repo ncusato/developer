@@ -2,13 +2,13 @@
 
 ## Introduction
 
-You will run a provided Node.js client that behaves like an AI agent. It calls the paid API, receives a 402 challenge, signs a payment authorization with a Base Sepolia wallet, retries the request, and prints the paid SH sales data.
+You will run a provided Node.js client that behaves like an AI agent. It calls the paid API, receives a 402 challenge, signs a payment authorization with a Base Sepolia wallet, retries the request, and prints paid SH-derived sales data.
 
 ### Objectives
 
 - Prepare a testnet wallet for the x402 payment.
 - Generate the Node.js agent client from workshop assets.
-- Pay for one SH sales query through API Gateway.
+- Pay for one SH-derived sales query through API Gateway.
 - Inspect the payment response and returned data.
 
 Estimated Time: 10 minutes
@@ -64,7 +64,7 @@ Estimated Time: 10 minutes
 
     - The server payment requirement.
     - `Paid status: 200`.
-    - The number of returned SH sales rows.
+- The number of returned SH-derived sales rows.
     - A settlement response or transaction value from the facilitator.
 
 The client saved the payment signature in `.last-payment-signature`. You will use that file in Lab 6 to test idempotent replay.

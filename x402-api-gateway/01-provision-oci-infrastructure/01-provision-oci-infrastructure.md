@@ -101,6 +101,8 @@ Estimated Time: 10 minutes
     - `PUBLIC_SUBNET_OCID`
     - `PRIVATE_SUBNET_OCID`
 
+    ![Cloud Shell Output](./images/shell-success.png)
+
 ## Task 3: Review What the Script Created
 
 1. In the OCI Console, confirm these resources exist:

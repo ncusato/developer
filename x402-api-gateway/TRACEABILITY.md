@@ -14,9 +14,9 @@ Estimated Time: Reference metadata
 | --- | --- |
 | About this Workshop, Objectives, Prerequisites, Architecture, Labs | `00-introduction/00-introduction.md` |
 | Lab 1: Provision OCI Infrastructure | `01-provision-oci-infrastructure/01-provision-oci-infrastructure.md` |
-| Lab 2: Enable ORDS AutoREST on the SH Schema | `02-enable-ords-autorest/02-enable-ords-autorest.md` |
+| Lab 2: Expose SH Data with ORDS AutoREST | `02-enable-ords-autorest/02-enable-ords-autorest.md` |
 | Lab 3: Deploy x402 Middleware as an OCI Function | `03-deploy-x402-middleware/03-deploy-x402-middleware.md` |
-| Lab 4: Integrate x402 with API Gateway and the SH REST API | `04-integrate-api-gateway/04-integrate-api-gateway.md` |
+| Lab 4: Integrate x402 with API Gateway and the SH Data REST API | `04-integrate-api-gateway/04-integrate-api-gateway.md` |
 | Lab 5: Test With an Agent Client | `05-test-agent-client/05-test-agent-client.md` |
 | Lab 6: Verify Idempotency and Payment Receipts | `06-idempotency-receipts/06-idempotency-receipts.md` |
 | Lab 7: Polish Responses With OCI Generative AI | `07-oci-genai-responses/07-oci-genai-responses.md` |
@@ -34,6 +34,7 @@ Estimated Time: Reference metadata
 | EIP-712 domain for USDC on Base Sepolia | Mitigated | Lab 3 now advertises `USDC_EIP712_NAME` and `USDC_EIP712_VERSION`. Lab 5 reads those values from the challenge. Defaults are `USDC` and `2`; publishers should still confirm live token metadata. |
 | x402 spec version | Mitigated | The workshop keeps `x402Version: 2` and uses the current x402 facilitator verify/settle flow. Publishers should confirm v2 support before publication. |
 | ORDS AutoREST query syntax | Resolved | Lab 2 now uses `curl --get --data-urlencode` plus a PowerShell `curl.exe` example for JSON filters. |
+| Maintained SH schema REST enablement | Resolved | Lab 2 no longer unlocks or REST-enables the maintained `SH` schema. It creates `X402_REST` views over SH sample data and maps ORDS to `/ords/sh/`. |
 | Sample schema row counts | Resolved | Lab 2 removed exact row-count claims and tells learners to use `USER_TABLES` output as the source of truth. |
 | Network configuration | Resolved | Lab 1 now creates an explicit VCN, public API Gateway subnet, private Functions subnet, NAT gateway, and service gateway. |
 | OAuth client setup for `x402_app` | Improved | Lab 3 now adds receipts privilege guidance before OAuth client creation. A production LiveLabs pass can add screenshots. |

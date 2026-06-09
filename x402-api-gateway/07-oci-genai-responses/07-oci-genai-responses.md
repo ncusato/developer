@@ -16,7 +16,7 @@ This lab adds optional summarization inside the x402 middleware function. After 
                                   |
                                   | verified + settled
                                   v
-                          [ORDS AutoREST -> SH data]
+[ORDS AutoREST -> SH-derived data]
                                   |
                                   | optional enrichment
                                   v
