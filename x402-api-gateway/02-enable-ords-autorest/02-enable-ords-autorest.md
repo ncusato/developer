@@ -63,6 +63,8 @@ Estimated Time: 8 minutes
     - `X402_REST` with `OPEN` account status.
     - Four tables owned by `X402_REST`: `API_PRODUCTS`, `BUYER_SEGMENTS`, `MARKET_SIGNALS`, and `PRICING_BENCHMARKS`.
 
+    ![Database Actions SQL results showing X402_REST open and four market intelligence tables created](images/sql-success.png)
+
 The SQL helper maps ORDS to `/ords/market/` and exposes these endpoints:
 
 - `/ords/market/signals/`
@@ -74,37 +76,47 @@ The helper is safe to rerun. If an earlier attempt enabled `X402_REST` with anot
 
 ## Task 3: Verify the ORDS Endpoint
 
-1. In Database Actions, open **REST**.
-2. Select the `X402_REST` schema, then select the `MARKET_SIGNALS` table.
-3. Copy its generated endpoint. It should look like:
+1. In Database Actions, keep the browser tab open and copy the host from the address bar. Keep only the protocol and host through `oraclecloudapps.com`.
+
+    The `ADMIN` REST overview can show `0` AutoREST objects. That is expected because the page is scoped to the signed-in schema. The market endpoints belong to `X402_REST`, so verify them directly by URL.
+
+2. In Cloud Shell, save the host value:
 
     ```
     <copy>
-    https://YOUR-ADB-HOST.adb.YOUR-REGION.oraclecloudapps.com/ords/market/signals/
+    export ADB_ORDS_HOST="https://YOUR-ADB-HOST.adb.YOUR-REGION.oraclecloudapps.com"
     </copy>
     ```
 
-4. Test the endpoint from Cloud Shell:
+3. Test the `signals` endpoint:
 
     ```
     <copy>
-    curl "https://YOUR-ADB-HOST.adb.YOUR-REGION.oraclecloudapps.com/ords/market/signals/?limit=5"
+    curl "$ADB_ORDS_HOST/ords/market/signals/?limit=5"
     </copy>
     ```
+
+4. Confirm the response includes an `items` array with market signal records.
 
 5. Save the ORDS base URLs in `workshop.env`:
 
     ```
     <copy>
-    cat >> workshop.env <<'EOF'
-    export UPSTREAM_BASE="https://YOUR-ADB-HOST.adb.YOUR-REGION.oraclecloudapps.com/ords/market/"
-    export ORDS_RECEIPTS_URL="https://YOUR-ADB-HOST.adb.YOUR-REGION.oraclecloudapps.com/ords/x402/"
+    cat >> workshop.env <<EOF
+    export UPSTREAM_BASE="$ADB_ORDS_HOST/ords/market/"
+    export ORDS_RECEIPTS_URL="$ADB_ORDS_HOST/ords/x402/"
     EOF
     source workshop.env
     </copy>
     ```
 
-6. Replace `YOUR-ADB-HOST` and `YOUR-REGION` with your real Autonomous Database host values before continuing.
+6. Confirm the saved values:
+
+    ```
+    <copy>
+    grep -E 'UPSTREAM_BASE|ORDS_RECEIPTS_URL' workshop.env
+    </copy>
+    ```
 
 ## Learn more
 

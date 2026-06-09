@@ -24,6 +24,8 @@ Estimated Time: 5 minutes
 
     **ORDS returns 404:** Confirm `UPSTREAM_BASE` ends in `/ords/market/` and that the `X402_REST` tables `MARKET_SIGNALS`, `API_PRODUCTS`, `BUYER_SEGMENTS`, and `PRICING_BENCHMARKS` are REST-enabled.
 
+    **Database Actions REST overview shows 0 AutoREST objects:** Check which schema is signed in. The `ADMIN` REST overview is schema-scoped and can show zero objects even when `X402_REST` endpoints work. Verify with `curl "$ADB_ORDS_HOST/ords/market/signals/?limit=5"`.
+
     **Facilitator verification fails:** Confirm the wallet has Base Sepolia test USDC, the `NETWORK` value is `eip155:84532`, and the `ASSET_ADDRESS` value matches the Base Sepolia USDC contract.
 
     **Receipt writes fail:** Confirm the ORDS OAuth client has the receipt privilege and that `ORDS_CLIENT_ID`, `ORDS_CLIENT_SECRET`, and `ORDS_RECEIPTS_URL` are set in `workshop.env`.
