@@ -9,6 +9,9 @@ log() {
 
 fail_report() {
   local status="$1"
+  if (( BASH_SUBSHELL > 0 )); then
+    exit "$status"
+  fi
   echo >&2
   echo "Bootstrap failed during: $CURRENT_STEP" >&2
   echo "Command: $BASH_COMMAND" >&2
@@ -256,6 +259,55 @@ ensure_subnet() {
     --raw-output
 }
 
+ensure_api_gateway_security_list() {
+  local vcn_id="$1"
+  local name="${WORKSHOP_PREFIX}-api-gateway-security-list"
+  local id ingress_rules egress_rules create_output
+  id="$(find_by_display_name "oci network security-list list --compartment-id '$COMPARTMENT_OCID' --vcn-id '$vcn_id' --all" "$name")"
+  if [[ -n "$id" ]]; then
+    echo "$id"
+    return
+  fi
+
+  ingress_rules="$(jq -cn '[{source:"0.0.0.0/0", sourceType:"CIDR_BLOCK", protocol:"6", isStateless:false, tcpOptions:{destinationPortRange:{min:443, max:443}}}]')"
+  egress_rules="$(jq -cn '[{destination:"0.0.0.0/0", destinationType:"CIDR_BLOCK", protocol:"all", isStateless:false}]')"
+
+  if ! create_output="$(oci network security-list create \
+    --compartment-id "$COMPARTMENT_OCID" \
+    --vcn-id "$vcn_id" \
+    --display-name "$name" \
+    --ingress-security-rules "$ingress_rules" \
+    --egress-security-rules "$egress_rules" \
+    --query "data.id" \
+    --raw-output 2>&1)"; then
+    echo "$create_output" >&2
+    return 1
+  fi
+  echo "$create_output"
+}
+
+ensure_subnet_has_security_list() {
+  local subnet_id="$1"
+  local security_list_id="$2"
+  local current_ids next_ids update_output
+  current_ids="$(oci network subnet get --subnet-id "$subnet_id" --query 'data."security-list-ids"' --output json)"
+
+  if jq -e --arg id "$security_list_id" 'index($id)' >/dev/null <<<"$current_ids"; then
+    echo "$security_list_id"
+    return
+  fi
+
+  next_ids="$(jq -c --arg id "$security_list_id" '. + [$id] | unique' <<<"$current_ids")"
+  if ! update_output="$(oci network subnet update \
+    --subnet-id "$subnet_id" \
+    --security-list-ids "$next_ids" \
+    --force 2>&1)"; then
+    echo "$update_output" >&2
+    return 1
+  fi
+  echo "$security_list_id"
+}
+
 ensure_autonomous_database() {
   local id
   local create_output
@@ -331,39 +383,90 @@ ensure_autonomous_database() {
   echo "$create_output"
 }
 
+find_gateway_by_display_name() {
+  local display_name="$1"
+  oci api-gateway gateway list --compartment-id "$COMPARTMENT_OCID" --all | jq -r --arg name "$display_name" '
+    (
+      if (.data | type) == "array" then .data
+      elif (.data.items | type) == "array" then .data.items
+      else []
+      end
+    )
+    | .[]
+    | select(."display-name" == $name or .displayName == $name or .name == $name)
+    | select((."lifecycle-state" // .lifecycleState // "") as $state | ($state != "DELETED" and $state != "DELETING" and $state != "FAILED"))
+    | .id
+  ' | head -n 1
+}
+
+wait_for_gateway_active() {
+  local gateway_id="$1"
+  local state
+  for _ in {1..40}; do
+    state="$(oci api-gateway gateway get --gateway-id "$gateway_id" --query 'data."lifecycle-state"' --raw-output)"
+    case "$state" in
+      ACTIVE)
+        echo "$gateway_id"
+        return
+        ;;
+      FAILED)
+        echo "API Gateway entered FAILED state: $gateway_id" >&2
+        return 1
+        ;;
+      *)
+        log "WAIT: API Gateway lifecycle state is $state"
+        sleep 15
+        ;;
+    esac
+  done
+  echo "Timed out waiting for API Gateway to become ACTIVE: $gateway_id" >&2
+  return 1
+}
+
 ensure_api_gateway() {
   local subnet_id="$1"
-  local id
-  id="$(find_by_display_name "oci api-gateway gateway list --compartment-id '$COMPARTMENT_OCID' --all" "$API_GATEWAY_NAME")"
+  local id create_output
+  id="$(find_gateway_by_display_name "$API_GATEWAY_NAME")"
   if [[ -n "$id" ]]; then
-    echo "$id"
+    wait_for_gateway_active "$id"
     return
   fi
-  oci api-gateway gateway create \
+  if ! create_output="$(oci api-gateway gateway create \
     --compartment-id "$COMPARTMENT_OCID" \
     --display-name "$API_GATEWAY_NAME" \
     --endpoint-type PUBLIC \
     --subnet-id "$subnet_id" \
-    --wait-for-state ACTIVE \
     --query "data.id" \
-    --raw-output
+    --raw-output 2>&1)"; then
+    echo "$create_output" >&2
+    return 1
+  fi
+  if [[ -z "$create_output" || "$create_output" == "null" ]]; then
+    echo "API Gateway create did not return a gateway OCID." >&2
+    return 1
+  fi
+  wait_for_gateway_active "$create_output"
 }
 
 ensure_functions_app() {
   local subnet_id="$1"
-  local id subnet_json
+  local id subnet_json create_output
   id="$(find_by_display_name "oci fn application list --compartment-id '$COMPARTMENT_OCID' --all" "$FUNCTIONS_APP_NAME")"
   if [[ -n "$id" ]]; then
     echo "$id"
     return
   fi
   subnet_json="$(jq -cn --arg subnet "$subnet_id" '[$subnet]')"
-  oci fn application create \
+  if ! create_output="$(oci fn application create \
     --compartment-id "$COMPARTMENT_OCID" \
     --display-name "$FUNCTIONS_APP_NAME" \
     --subnet-ids "$subnet_json" \
     --query "data.id" \
-    --raw-output
+    --raw-output 2>&1)"; then
+    echo "$create_output" >&2
+    return 1
+  fi
+  echo "$create_output"
 }
 
 log "Creating or finding core OCI resources..."
@@ -408,6 +511,16 @@ log "START: checking public subnet $PUBLIC_SUBNET_NAME"
 PUBLIC_SUBNET_OCID="$(ensure_subnet "$VCN_OCID" "$PUBLIC_SUBNET_NAME" "10.0.1.0/24" "${WORKSHOP_PREFIX}pub" "$PUBLIC_RT_OCID" false)"
 ready "Public subnet" "$PUBLIC_SUBNET_OCID"
 
+CURRENT_STEP="API Gateway HTTPS security list"
+log "START: checking API Gateway HTTPS security list"
+API_GATEWAY_SECURITY_LIST_OCID="$(ensure_api_gateway_security_list "$VCN_OCID")"
+ready "API Gateway HTTPS security list" "$API_GATEWAY_SECURITY_LIST_OCID"
+
+CURRENT_STEP="attaching API Gateway HTTPS security list to $PUBLIC_SUBNET_NAME"
+log "START: attaching API Gateway HTTPS security list to $PUBLIC_SUBNET_NAME"
+ensure_subnet_has_security_list "$PUBLIC_SUBNET_OCID" "$API_GATEWAY_SECURITY_LIST_OCID" >/dev/null
+log "DONE: API Gateway HTTPS security list attached to $PUBLIC_SUBNET_NAME"
+
 CURRENT_STEP="private subnet $PRIVATE_SUBNET_NAME"
 log "START: checking private subnet $PRIVATE_SUBNET_NAME"
 PRIVATE_SUBNET_OCID="$(ensure_subnet "$VCN_OCID" "$PRIVATE_SUBNET_NAME" "10.0.2.0/24" "${WORKSHOP_PREFIX}priv" "$PRIVATE_RT_OCID" true)"
@@ -446,6 +559,7 @@ export TENANCY_NAMESPACE="$TENANCY_NAMESPACE"
 export VCN_OCID="$VCN_OCID"
 export PUBLIC_SUBNET_OCID="$PUBLIC_SUBNET_OCID"
 export PRIVATE_SUBNET_OCID="$PRIVATE_SUBNET_OCID"
+export API_GATEWAY_SECURITY_LIST_OCID="$API_GATEWAY_SECURITY_LIST_OCID"
 export ADB_OCID="$ADB_OCID"
 export API_GATEWAY_OCID="$API_GATEWAY_OCID"
 export API_GATEWAY_ENDPOINT="https://$API_GATEWAY_ENDPOINT"
@@ -459,6 +573,7 @@ echo "Core resources are ready. Saved outputs to workshop-outputs.env."
 echo "VCN: $VCN_OCID"
 echo "Public subnet: $PUBLIC_SUBNET_OCID"
 echo "Private subnet: $PRIVATE_SUBNET_OCID"
+echo "API Gateway HTTPS security list: $API_GATEWAY_SECURITY_LIST_OCID"
 echo "Autonomous Database: $ADB_OCID"
 echo "API Gateway: $API_GATEWAY_OCID"
 echo "Functions application: $FUNCTIONS_APP_OCID"

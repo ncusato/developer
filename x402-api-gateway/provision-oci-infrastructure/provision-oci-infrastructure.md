@@ -87,7 +87,7 @@ Estimated Time: 10 minutes
     ```
     <copy>
     source workshop-outputs.env
-    env | grep -E 'ADB_OCID|API_GATEWAY|FUNCTIONS_APP|SUBNET|VCN'
+    env | grep -E 'ADB_OCID|API_GATEWAY|FUNCTIONS_APP|SECURITY_LIST|SUBNET|VCN'
     </copy>
     ```
 
@@ -96,6 +96,7 @@ Estimated Time: 10 minutes
     - `ADB_OCID`
     - `API_GATEWAY_OCID`
     - `API_GATEWAY_ENDPOINT`
+    - `API_GATEWAY_SECURITY_LIST_OCID`
     - `FUNCTIONS_APP_OCID`
     - `PUBLIC_SUBNET_OCID`
     - `PRIVATE_SUBNET_OCID`
@@ -107,6 +108,7 @@ Estimated Time: 10 minutes
     - VCN: `x402-workshop-vcn`
     - Public subnet: `x402-public-subnet`
     - Private subnet: `x402-private-subnet`
+    - API Gateway HTTPS security list: `x402-api-gateway-security-list`
     - Autonomous Database: `x402-monetized-db`
     - API Gateway: `x402-api-gateway`
     - Functions application: `x402-functions`
@@ -114,6 +116,7 @@ Estimated Time: 10 minutes
 2. Check the network shape:
 
     - API Gateway uses the public subnet.
+    - The public subnet allows HTTPS traffic for API Gateway.
     - Functions uses the private subnet.
     - The private subnet has NAT access for x402 facilitator calls.
     - The private subnet has service gateway access for OCI services.
